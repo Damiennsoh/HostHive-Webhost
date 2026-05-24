@@ -1,47 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { mockProjects } from '@/lib/mock-data';
+import { requireAuth, isAuthError } from '@/lib/api-auth';
+import { getCoolifyClient } from '@/lib/coolify-client';
+import { slugify, mapProjectTypeToRuntime } from '@/lib/project-utils';
 
-/**
- * GET /api/projects
- * Get all projects for the authenticated user
- */
-export async function GET(request: NextRequest) {
-  try {
-    // TODO: Get user from session/token
-    // TODO: Replace with actual Supabase query
-    // const { data } = await supabase
-    //   .from('projects')
-    //   .select('*')
-    //   .eq('user_id', userId)
-    //   .order('created_at', { ascending: false });
+export async function GET() {
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
 
-    return NextResponse.json({ success: true, projects: mockProjects }, { status: 200 });
-  } catch (error) {
-    console.error('[Get Projects Error]', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  const { user, supabase } = auth;
+
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  return NextResponse.json({ success: true, projects: data ?? [] }, { status: 200 });
 }
 
-/**
- * POST /api/projects
- * Create a new project
- * 
- * Expected body: {
- *   name: string,
- *   description?: string,
- *   repository_url: string,
- *   repository_branch: string,
- *   project_type: string,
- *   build_command?: string,
- *   start_command?: string
- * }
- */
 export async function POST(request: NextRequest) {
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
+
+  const { user, supabase } = auth;
+
   try {
     const body = await request.json();
     const {
       name,
-      description,
       repository_url,
       repository_branch,
       project_type,
@@ -50,54 +40,57 @@ export async function POST(request: NextRequest) {
     } = body;
 
     if (!name || !repository_url || !repository_branch || !project_type) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // TODO: Replace with actual Supabase insert
-    // const { data, error } = await supabase
-    //   .from('projects')
-    //   .insert({
-    //     user_id: userId,
-    //     name,
-    //     description,
-    //     repository_url,
-    //     repository_branch,
-    //     project_type,
-    //     build_command,
-    //     start_command,
-    //     status: 'active',
-    //     environment_variables: {},
-    //   });
+    const slug = slugify(name);
+    const runtime = mapProjectTypeToRuntime(project_type);
+    const baseDomain = process.env.BASE_DOMAIN ?? 'hosthive.app';
+    const assignedDomain = `${slug}.${baseDomain}`;
 
-    const newProject = {
-      id: 'proj_' + Date.now(),
-      user_id: 'user_001',
-      name,
-      description,
-      repository_url,
-      repository_branch,
-      project_type,
-      status: 'active',
-      domain: `${name.toLowerCase().replace(/\s+/g, '-')}.hosthive.app`,
-      environment_variables: {},
-      build_command,
-      start_command,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    let coolifyUuid: string | null = null;
 
-    return NextResponse.json(
-      { success: true, project: newProject },
-      { status: 201 }
-    );
+    try {
+      const coolify = getCoolifyClient();
+      const coolifyProject = await coolify.createProject({
+        name,
+        git_repo: repository_url,
+        branch: repository_branch,
+        build_command,
+        start_command,
+        runtime,
+      });
+      coolifyUuid = coolifyProject.uuid;
+    } catch (coolifyErr) {
+      console.warn('[Create Project] Coolify unavailable:', coolifyErr);
+    }
+
+    const { data, error } = await supabase
+      .from('projects')
+      .insert({
+        user_id: user.id,
+        name,
+        slug,
+        coolify_uuid: coolifyUuid,
+        git_repo_url: repository_url,
+        git_branch: repository_branch,
+        build_command: build_command ?? null,
+        start_command: start_command ?? null,
+        runtime,
+        framework: project_type,
+        assigned_domain: assignedDomain,
+        status: coolifyUuid ? 'inactive' : 'inactive',
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, project: data }, { status: 201 });
   } catch (error) {
     console.error('[Create Project Error]', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -65,7 +65,7 @@ export function DashboardHeader() {
             {/* Mobile logo */}
             <Link href="/dashboard" className="flex items-center gap-2 lg:hidden">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
-                <span className="text-sm font-bold text-black">N</span>
+                <span className="text-sm font-bold text-black">H</span>
               </div>
             </Link>
 

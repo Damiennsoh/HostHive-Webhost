@@ -49,6 +49,7 @@ export default function NewProjectPage() {
     { key: '', value: '', isSecret: false }
   ])
   const [isDeploying, setIsDeploying] = useState(false)
+  const [error, setError] = useState('')
 
   const filteredRepos = mockRepositories.filter((repo) =>
     repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -91,9 +92,58 @@ export default function NewProjectPage() {
 
   const handleDeploy = async () => {
     setIsDeploying(true)
-    // Simulate deployment
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    router.push('/projects')
+    setError('')
+
+    try {
+      const repo = mockRepositories.find((r) => r.id === selectedRepo)
+      if (!repo) throw new Error('Select a repository first')
+
+      const projectType =
+        framework === 'docker' ? 'docker' : framework === 'static' ? 'static' : 'node'
+
+      const createRes = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: projectName,
+          repository_url: `https://github.com/${repo.fullName}`,
+          repository_branch: branch,
+          project_type: projectType,
+        }),
+      })
+
+      const createData = await createRes.json()
+      if (!createRes.ok) throw new Error(createData.error || 'Failed to create project')
+
+      const projectId = createData.project.id as string
+
+      for (const envVar of envVars.filter((v) => v.key.trim())) {
+        await fetch(`/api/projects/${projectId}/env`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            key: envVar.key,
+            value: envVar.value,
+            is_secret: envVar.isSecret,
+          }),
+        })
+      }
+
+      const deployRes = await fetch(`/api/projects/${projectId}/deployments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ branch, triggered_by: 'manual' }),
+      })
+
+      const deployData = await deployRes.json()
+      if (!deployRes.ok) throw new Error(deployData.error || 'Failed to trigger deployment')
+
+      router.push(`/projects/${projectId}`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Deployment failed')
+    } finally {
+      setIsDeploying(false)
+    }
   }
 
   const canProceed = () => {
@@ -409,6 +459,12 @@ export default function NewProjectPage() {
                   </span>
                 </div>
               </div>
+
+              {error && (
+                <div className="rounded-md bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
+                  {error}
+                </div>
+              )}
 
               <Button
                 onClick={handleDeploy}

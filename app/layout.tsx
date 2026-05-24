@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/lib/auth-context'
+import { APP_NAME, APP_TAGLINE } from '@/lib/brand'
 import './globals.css'
 
 const inter = Inter({ 
@@ -15,13 +16,13 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'NexusCloud - Deploy at Scale',
-  description: 'Enterprise-grade cloud hosting platform for modern applications. Deploy, scale, and manage your infrastructure with confidence.',
-  keywords: ['cloud hosting', 'deployment', 'infrastructure', 'DevOps', 'platform'],
-  authors: [{ name: 'NexusCloud' }],
+  title: `${APP_NAME} - Professional Web Hosting`,
+  description: APP_TAGLINE,
+  keywords: ['web hosting', 'deployment', 'Coolify', 'PaaS', 'DevOps', 'platform'],
+  authors: [{ name: APP_NAME }],
   openGraph: {
-    title: 'NexusCloud - Deploy at Scale',
-    description: 'Enterprise-grade cloud hosting platform for modern applications.',
+    title: `${APP_NAME} - Professional Web Hosting`,
+    description: APP_TAGLINE,
     type: 'website',
   },
 }

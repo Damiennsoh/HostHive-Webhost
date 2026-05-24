@@ -172,7 +172,7 @@ export default function AccountPage() {
             { action: 'Deployed marketing-site to production', time: '2 hours ago' },
             { action: 'Created new project dashboard-app', time: '1 day ago' },
             { action: 'Updated environment variables for api-gateway', time: '2 days ago' },
-            { action: 'Added domain docs.nexuscloud.app', time: '3 days ago' },
+            { action: 'Added domain docs.hosthive.app', time: '3 days ago' },
           ].map((activity, index) => (
             <div
               key={index}

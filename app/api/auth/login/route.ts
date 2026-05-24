@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
-/**
- * POST /api/auth/login
- * Authenticate user with email and password
- * 
- * Expected body: { email: string, password: string }
- * Returns: { user, token, expiresAt }
- */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -19,34 +13,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Replace with actual Supabase authentication
-    // const { data, error } = await supabase.auth.signInWithPassword({
-    //   email,
-    //   password,
-    // });
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-    // For now, return mock response
-    const mockUser = {
-      id: 'user_001',
-      email,
-      name: 'John Developer',
-      avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=john',
-    };
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
 
     return NextResponse.json(
       {
         success: true,
-        user: mockUser,
-        token: 'mock_jwt_token_' + Date.now(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.user_metadata?.full_name,
+          avatar_url: data.user.user_metadata?.avatar_url,
+        },
       },
       { status: 200 }
     );
   } catch (error) {
     console.error('[Auth Login Error]', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

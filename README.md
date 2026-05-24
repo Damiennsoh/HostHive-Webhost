@@ -2,7 +2,7 @@
 
 A modern, scalable web hosting platform similar to Vercel and Render. Deploy frontends, backends, and Docker containers with ease. Built with Next.js, React, Coolify, and Traefik.
 
-![HostHive Dashboard](https://img.shields.io/badge/status-MVP%20Ready-brightgreen)
+![HostHive Dashboard](https://img.shields.io/badge/status-MVP%20In%20Progress-orange)
 ![Next.js](https://img.shields.io/badge/Next.js-16+-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19+-61dafb?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)
@@ -85,17 +85,88 @@ yarn install
 
 ### 3. Configure Environment
 
-```bash
-# Copy environment template
-cp .env.example .env.local
+A ready-to-edit **`.env.local`** is included in the repo. Open it and replace placeholders with your credentials:
 
-# Edit environment variables (optional for local dev)
-nano .env.local
+```bash
+# Required for auth + database
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# Required for deployments
+COOLIFY_API_URL=http://localhost:8000
+COOLIFY_API_TOKEN=
 ```
 
-Default values work for local development with Docker.
+Run Supabase migrations in order: `supabase/migrations/001_init.sql`, `002_rls.sql`, `003_domains.sql`.
 
-### 4. Start Development Services
+### 4. Why Docker? (What each service does)
+
+HostHive uses Docker so you **never run a custom build system or per-user VPS**. One machine runs isolated containers for every customer project.
+
+| Service | Role |
+|---------|------|
+| **Dashboard** (`docker compose up dashboard`) | Next.js UI + API — what users see |
+| **Coolify** | Deployment engine — clones Git, builds with Nixpacks, runs containers |
+| **Traefik** | Reverse proxy — routes domains, auto SSL via Let's Encrypt |
+| **PostgreSQL / Redis** | Optional local stack; production uses **Supabase** for auth + data |
+| **Cloudflare Tunnel** (`--profile demo`) | Public HTTPS URL for employer demos without buying a domain |
+
+**Container isolation:** Coolify runs each project in its **own Docker container** with separate networks and resource limits (`--cpus`, `--memory`). User apps cannot access each other or the host filesystem. HostHive stores secrets in Supabase; Coolify only receives them at deploy time.
+
+```bash
+# Start Coolify + Traefik (production profile)
+docker compose --profile production up -d
+
+# Optional: expose localhost via Cloudflare for demos
+docker compose --profile demo up -d
+```
+
+### 5. Start Development
+
+```bash
+pnpm dev
+```
+
+Visit http://localhost:3000 — register, create a project at `/projects/new`, add domains at `/domains`.
+
+### 6. Custom domains (Vercel-style DNS)
+
+When you add a domain, HostHive shows **Type / Name / Value** records:
+
+| Type | Name | Value | Purpose |
+|------|------|-------|---------|
+| **CNAME** | `www` or subdomain | `{project-slug}.hosthive.app` | Route traffic to your deployment |
+| **A** | `@` | Your server IP | Apex domains |
+| **TXT** | `_hosthive` | `hosthive-verify={slug}` | Domain ownership verification before SSL |
+
+Traefik + Coolify provision SSL once DNS propagates.
+
+---
+
+## MVP Status (employer demo)
+
+| Area | Status |
+|------|--------|
+| Supabase auth + RLS | ✅ Done |
+| Coolify deploy API | ✅ Done |
+| GitHub webhook + rate limit | ✅ Done |
+| Resend deploy emails | ✅ Done (needs API key) |
+| Overview dashboard (HostDesk-style UI) | ✅ Done |
+| `/projects/new` → create + deploy | ✅ Done |
+| Domains + DNS table | ✅ Done |
+| Live log streaming UI | ⏳ API only |
+| Real GitHub repo picker | ⏳ Mock repos in UI |
+| SSL auto-verify loop | ⏳ Manual DNS for MVP |
+| Billing / teams | 🔜 Post-funding |
+
+**Security (MVP):** Supabase RLS isolates user data; webhooks use HMAC + zod + rate limits; env vars stored per-user in Postgres; containers isolated by Docker. **Not yet:** encrypted env at rest, SOC2, audit logs.
+
+**Mobile-first:** Dashboard uses responsive grids (`sm:` / `lg:` breakpoints), collapsible mobile nav, and stacked cards — works on phone; polish pass recommended before production.
+
+---
+
+### Legacy: Start Development Services
 
 ```bash
 # Start all services (Dashboard + PostgreSQL + Redis + Traefik)

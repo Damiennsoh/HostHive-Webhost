@@ -1,100 +1,106 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { mockProjects } from '@/lib/mock-data';
+import { requireAuth, isAuthError } from '@/lib/api-auth';
+import { getCoolifyClient } from '@/lib/coolify-client';
 
-/**
- * GET /api/projects/[id]
- * Get a specific project by ID
- */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { id } = await params;
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
 
-    // TODO: Replace with actual Supabase query
-    // const { data, error } = await supabase
-    //   .from('projects')
-    //   .select('*')
-    //   .eq('id', id)
-    //   .single();
+  const { user, supabase } = auth;
+  const { id } = await params;
 
-    const project = mockProjects.find((p) => p.id === id);
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single();
 
-    if (!project) {
-      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, project }, { status: 200 });
-  } catch (error) {
-    console.error('[Get Project Error]', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  if (error || !data) {
+    return NextResponse.json({ error: 'Project not found' }, { status: 404 });
   }
+
+  return NextResponse.json({ success: true, project: data }, { status: 200 });
 }
 
-/**
- * PATCH /api/projects/[id]
- * Update a project
- */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { id } = await params;
-    const body = await request.json();
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
 
-    // TODO: Replace with actual Supabase update
-    // const { data, error } = await supabase
-    //   .from('projects')
-    //   .update(body)
-    //   .eq('id', id);
+  const { user, supabase } = auth;
+  const { id } = await params;
+  const body = await request.json();
 
-    const project = mockProjects.find((p) => p.id === id);
+  const allowedFields = [
+    'name',
+    'git_branch',
+    'build_command',
+    'start_command',
+    'custom_domain',
+    'is_public',
+  ] as const;
 
-    if (!project) {
-      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
-    }
-
-    const updatedProject = {
-      ...project,
-      ...body,
-      updated_at: new Date().toISOString(),
-    };
-
-    return NextResponse.json(
-      { success: true, project: updatedProject },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error('[Update Project Error]', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  const updates: Record<string, unknown> = {};
+  for (const field of allowedFields) {
+    if (field in body) updates[field] = body[field];
   }
+
+  const { data, error } = await supabase
+    .from('projects')
+    .update(updates)
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select()
+    .single();
+
+  if (error || !data) {
+    return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+  }
+
+  return NextResponse.json({ success: true, project: data }, { status: 200 });
 }
 
-/**
- * DELETE /api/projects/[id]
- * Delete a project
- */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { id } = await params;
+  const auth = await requireAuth();
+  if (isAuthError(auth)) return auth;
 
-    // TODO: Replace with actual Supabase delete
-    // const { error } = await supabase
-    //   .from('projects')
-    //   .delete()
-    //   .eq('id', id);
+  const { user, supabase } = auth;
+  const { id } = await params;
 
-    return NextResponse.json(
-      { success: true, message: 'Project deleted' },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error('[Delete Project Error]', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  const { data: project } = await supabase
+    .from('projects')
+    .select('coolify_uuid')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single();
+
+  if (!project) {
+    return NextResponse.json({ error: 'Project not found' }, { status: 404 });
   }
+
+  if (project.coolify_uuid) {
+    try {
+      const coolify = getCoolifyClient();
+      await coolify.deleteProject(project.coolify_uuid);
+    } catch (err) {
+      console.warn('[Delete Project] Coolify cleanup failed:', err);
+    }
+  }
+
+  const { error } = await supabase.from('projects').delete().eq('id', id).eq('user_id', user.id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true, message: 'Project deleted' }, { status: 200 });
 }

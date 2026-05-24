@@ -124,7 +124,7 @@ export default function HomePage() {
             className="mx-auto max-w-3xl text-center"
           >
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-1.5 text-sm">
-              <span className="text-muted-foreground">Announcing NexusCloud v2.0</span>
+              <span className="text-muted-foreground">Announcing HostHive MVP</span>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </div>
 
@@ -137,8 +137,8 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-6 text-lg leading-8 text-muted-foreground sm:text-xl">
-              Enterprise-grade cloud hosting platform for modern applications.
-              Deploy, scale, and manage your infrastructure with confidence.
+              HostHive is a modern hosting platform for frontends, backends, and Docker apps.
+              Connect GitHub, deploy with Coolify, and ship in minutes.
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -171,11 +171,11 @@ export default function HomePage() {
                 <span className="ml-4 text-sm text-muted-foreground">terminal</span>
               </div>
               <div className="p-6 font-mono text-sm">
-                <div className="text-muted-foreground">$ npx nexuscloud deploy</div>
+                <div className="text-muted-foreground">$ npx hosthive deploy</div>
                 <div className="mt-2 text-emerald-400">Deploying to production...</div>
                 <div className="mt-1 text-muted-foreground">Building application...</div>
                 <div className="mt-1 text-muted-foreground">Optimizing assets...</div>
-                <div className="mt-1 text-emerald-400">Deployed to https://app.nexuscloud.app</div>
+                <div className="mt-1 text-emerald-400">Deployed to https://app.hosthive.app</div>
                 <div className="mt-2 flex items-center gap-2">
                   <span className="text-muted-foreground">$</span>
                   <span className="animate-pulse">_</span>
@@ -472,7 +472,7 @@ export default function HomePage() {
                 Ready to deploy?
               </h2>
               <p className="mt-4 text-lg text-muted-foreground">
-                Join thousands of developers shipping faster with NexusCloud.
+                Join thousands of developers shipping faster with HostHive.
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link href="/register">

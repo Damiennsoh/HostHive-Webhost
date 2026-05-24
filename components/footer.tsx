@@ -35,12 +35,12 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
-                <span className="text-sm font-bold text-black">N</span>
+                <span className="text-sm font-bold text-black">H</span>
               </div>
-              <span className="text-lg font-semibold text-foreground">NexusCloud</span>
+              <span className="text-lg font-semibold text-foreground">HostHive</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
-              Deploy at scale with enterprise-grade infrastructure.
+              Deploy and scale your apps on a modern hosting platform.
             </p>
             <div className="mt-4 flex gap-4">
               <a
@@ -129,7 +129,7 @@ export function Footer() {
 
         <div className="mt-12 border-t border-border pt-8">
           <p className="text-center text-sm text-muted-foreground">
-            2024 NexusCloud. All rights reserved.
+            © {new Date().getFullYear()} HostHive. All rights reserved.
           </p>
         </div>
       </div>

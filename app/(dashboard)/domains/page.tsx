@@ -1,42 +1,160 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Plus, Search, Globe, ExternalLink, Trash2, RefreshCw, Shield } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { Plus, Search, Globe, ExternalLink, Trash2, Shield, Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { mockDomains, mockProjects } from '@/lib/mock-data'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { getDefaultPlatformRecords, type DnsRecord } from '@/lib/dns-config'
 import { cn } from '@/lib/utils'
+import type { DbProject } from '@/types/supabase'
+
+interface DomainRow {
+  id: string
+  domain: string
+  cname_target: string
+  verification_status: string
+  ssl_status: string
+  project_id: string
+  projects?: { name: string; slug: string } | null
+}
 
 export default function DomainsPage() {
+  const [domains, setDomains] = useState<DomainRow[]>([])
+  const [projects, setProjects] = useState<DbProject[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [projectId, setProjectId] = useState('')
+  const [domainName, setDomainName] = useState('')
+  const [dnsRecords, setDnsRecords] = useState<DnsRecord[]>([])
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [copied, setCopied] = useState<string | null>(null)
 
-  const filteredDomains = mockDomains.filter((domain) =>
-    domain.domain.toLowerCase().includes(searchQuery.toLowerCase())
+  const load = () => {
+    Promise.all([fetch('/api/domains'), fetch('/api/projects')])
+      .then(async ([dRes, pRes]) => {
+        const dJson = await dRes.json()
+        const pJson = await pRes.json()
+        if (dJson.success) setDomains(dJson.domains)
+        if (pJson.success) setProjects(pJson.projects)
+      })
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    load()
+  }, [])
+
+  const filtered = domains.filter((d) =>
+    d.domain.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const getProjectName = (projectId: string) => {
-    const project = mockProjects.find(p => p.id === projectId)
-    return project?.name || 'Unknown'
+  const handleAdd = async () => {
+    setError('')
+    const res = await fetch('/api/domains', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ project_id: projectId, domain: domainName }),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      setError(typeof json.error === 'string' ? json.error : 'Failed to add domain')
+      return
+    }
+    setDnsRecords(json.dnsRecords ?? [])
+    setDomainName('')
+    load()
+  }
+
+  const handleDelete = async (id: string) => {
+    await fetch(`/api/domains?id=${id}`, { method: 'DELETE' })
+    load()
+  }
+
+  const copy = (text: string, key: string) => {
+    navigator.clipboard.writeText(text)
+    setCopied(key)
+    setTimeout(() => setCopied(null), 2000)
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Domains</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Manage custom domains for your projects
+            Add custom domains with CNAME, A, and TXT verification records
           </p>
         </div>
-        <Button className="bg-white text-black hover:bg-white/90">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Domain
-        </Button>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Domain
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-card border-border sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Add custom domain</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <Label>Project</Label>
+                <Select value={projectId} onValueChange={setProjectId}>
+                  <SelectTrigger className="bg-muted border-border">
+                    <SelectValue placeholder="Select project" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="domain">Domain</Label>
+                <Input
+                  id="domain"
+                  placeholder="app.example.com"
+                  value={domainName}
+                  onChange={(e) => setDomainName(e.target.value)}
+                  className="bg-muted border-border"
+                />
+              </div>
+              {error && <p className="text-sm text-red-400">{error}</p>}
+              {dnsRecords.length > 0 && (
+                <DnsTable records={dnsRecords} copied={copied} onCopy={copy} />
+              )}
+              <Button
+                className="w-full bg-primary text-primary-foreground"
+                disabled={!projectId || !domainName}
+                onClick={handleAdd}
+              >
+                Add domain &amp; show DNS records
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* Search */}
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -44,150 +162,132 @@ export default function DomainsPage() {
           placeholder="Search domains..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="bg-muted border-border pl-9 text-foreground placeholder:text-muted-foreground focus:border-zinc-600"
+          className="bg-muted border-border pl-9"
         />
       </div>
 
-      {/* Domains List */}
-      <div className="rounded-lg border border-border bg-card">
-        <div className="border-b border-border px-4 py-3">
-          <div className="flex items-center gap-2">
-            <Globe className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">
-              {filteredDomains.length} Domain{filteredDomains.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-        </div>
-
-        {filteredDomains.length > 0 ? (
+      <div className="rounded-xl border border-border bg-card">
+        {loading ? (
+          <p className="p-8 text-sm text-muted-foreground">Loading domains…</p>
+        ) : filtered.length ? (
           <div className="divide-y divide-border">
-            {filteredDomains.map((domain, index) => (
-              <motion.div
+            {filtered.map((domain) => (
+              <div
                 key={domain.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: index * 0.05 }}
-                className="flex items-center justify-between px-4 py-4"
+                className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
-                    <Globe className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <a 
-                        href={`https://${domain.domain}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium text-foreground hover:underline"
-                      >
-                        {domain.domain}
-                      </a>
-                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {getProjectName(domain.projectId)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  {/* SSL Status */}
+                <div>
                   <div className="flex items-center gap-2">
-                    <Shield className={cn(
-                      'h-4 w-4',
-                      domain.ssl ? 'text-emerald-400' : 'text-amber-400'
-                    )} />
-                    <span className="text-xs text-muted-foreground">
-                      {domain.ssl ? 'SSL Active' : 'SSL Pending'}
-                    </span>
+                    <a
+                      href={`https://${domain.domain}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-foreground hover:underline"
+                    >
+                      {domain.domain}
+                    </a>
+                    <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
                   </div>
-
-                  {/* Status Badge */}
-                  <span className={cn(
-                    'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium',
-                    domain.status === 'active'
-                      ? 'bg-emerald-500/10 text-emerald-400'
-                      : domain.status === 'pending'
-                      ? 'bg-amber-500/10 text-amber-400'
-                      : 'bg-red-500/10 text-red-400'
-                  )}>
-                    <span className={cn(
-                      'h-1.5 w-1.5 rounded-full',
-                      domain.status === 'active'
-                        ? 'bg-emerald-400'
-                        : domain.status === 'pending'
-                        ? 'bg-amber-400 animate-pulse'
-                        : 'bg-red-400'
-                    )} />
-                    {domain.status === 'active' ? 'Active' : domain.status === 'pending' ? 'Pending' : 'Error'}
-                  </span>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                      <RefreshCw className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-400">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {domain.projects?.name ?? 'Project'} → {domain.cname_target}
+                  </p>
                 </div>
-              </motion.div>
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Shield
+                      className={cn(
+                        'h-3.5 w-3.5',
+                        domain.ssl_status === 'active' ? 'text-emerald-400' : 'text-amber-400'
+                      )}
+                    />
+                    SSL {domain.ssl_status}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{domain.verification_status}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-red-400"
+                    onClick={() => handleDelete(domain.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16">
+          <div className="flex flex-col items-center py-16 text-center">
             <Globe className="h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 text-lg font-medium text-foreground">
-              {searchQuery ? 'No domains found' : 'No domains yet'}
-            </h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {searchQuery 
-                ? 'Try a different search term' 
-                : 'Add a custom domain to your project'}
-            </p>
-            {!searchQuery && (
-              <Button className="mt-4 bg-white text-black hover:bg-white/90">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Domain
-              </Button>
-            )}
+            <p className="mt-4 text-sm text-muted-foreground">No domains yet.</p>
+            <Link href="/projects/new" className="mt-2 text-sm text-primary hover:underline">
+              Create a project first
+            </Link>
           </div>
         )}
       </div>
 
-      {/* DNS Configuration Help */}
-      <div className="rounded-lg border border-border bg-card p-6">
-        <h3 className="font-medium text-foreground">DNS Configuration</h3>
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h3 className="font-medium text-foreground">Default DNS records (all projects)</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          To connect a custom domain, add the following DNS records:
+          Like Vercel — configure Type, Name, and Value at your registrar:
         </p>
-
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="pb-2 text-left font-medium text-muted-foreground">Type</th>
-                <th className="pb-2 text-left font-medium text-muted-foreground">Name</th>
-                <th className="pb-2 text-left font-medium text-muted-foreground">Value</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              <tr>
-                <td className="py-2 font-mono text-foreground">A</td>
-                <td className="py-2 font-mono text-foreground">@</td>
-                <td className="py-2 font-mono text-muted-foreground">76.76.21.21</td>
-              </tr>
-              <tr>
-                <td className="py-2 font-mono text-foreground">CNAME</td>
-                <td className="py-2 font-mono text-foreground">www</td>
-                <td className="py-2 font-mono text-muted-foreground">cname.nexuscloud.app</td>
-              </tr>
-            </tbody>
-          </table>
+        <div className="mt-4">
+          <DnsTable records={getDefaultPlatformRecords()} copied={copied} onCopy={copy} />
         </div>
       </div>
+    </div>
+  )
+}
+
+function DnsTable({
+  records,
+  copied,
+  onCopy,
+}: {
+  records: DnsRecord[]
+  copied: string | null
+  onCopy: (text: string, key: string) => void
+}) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-border">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-border bg-muted/50">
+            <th className="px-3 py-2 text-left font-medium text-muted-foreground">Type</th>
+            <th className="px-3 py-2 text-left font-medium text-muted-foreground">Name</th>
+            <th className="px-3 py-2 text-left font-medium text-muted-foreground">Value</th>
+            <th className="px-3 py-2 text-left font-medium text-muted-foreground">Purpose</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {records.map((r) => {
+            const key = `${r.type}-${r.name}`
+            return (
+              <tr key={key}>
+                <td className="px-3 py-2 font-mono text-primary">{r.type}</td>
+                <td className="px-3 py-2 font-mono">{r.name}</td>
+                <td className="px-3 py-2 font-mono text-muted-foreground">
+                  <span className="inline-flex items-center gap-2">
+                    {r.value}
+                    <button
+                      type="button"
+                      onClick={() => onCopy(r.value, key)}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      {copied === key ? (
+                        <Check className="h-3.5 w-3.5" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  </span>
+                </td>
+                <td className="px-3 py-2 text-muted-foreground">{r.purpose}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
     </div>
   )
 }

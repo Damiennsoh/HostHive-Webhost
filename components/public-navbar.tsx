@@ -24,9 +24,9 @@ export function PublicNavbar() {
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
-              <span className="text-sm font-bold text-black">N</span>
+              <span className="text-sm font-bold text-black">H</span>
             </div>
-            <span className="text-lg font-semibold text-foreground">NexusCloud</span>
+            <span className="text-lg font-semibold text-foreground">HostHive</span>
           </Link>
           
           <div className="hidden items-center gap-1 md:flex">

@@ -46,9 +46,9 @@ export default function LoginPage() {
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white">
-              <span className="text-lg font-bold text-black">N</span>
+              <span className="text-lg font-bold text-black">H</span>
             </div>
-            <span className="text-xl font-semibold text-foreground">NexusCloud</span>
+            <span className="text-xl font-semibold text-foreground">HostHive</span>
           </Link>
         </div>
 
