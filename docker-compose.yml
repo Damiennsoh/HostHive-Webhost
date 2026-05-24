@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  # HostHive Dashboard (Next.js Frontend)
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hosthive-dashboard
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_APP_NAME: HostHive
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      # Database URLs will be set via .env file
+    volumes:
+      - ./node_modules:/app/node_modules
+    networks:
+      - hosthive-network
+    depends_on:
+      - api
+
+  # HostHive Backend API (Node.js/Express - Optional separate backend)
+  api:
+    image: node:20-alpine
+    container_name: hosthive-api
+    working_dir: /app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      NODE_ENV: production
+      PORT: 8000
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+    volumes:
+      - ./api:/app
+    networks:
+      - hosthive-network
+    command: npm start
+    profiles:
+      - backend
+
+  # Coolify v4 (Deployment Engine)
+  coolify:
+    image: ghcr.io/coollabsio/coolify:latest
+    container_name: coolify
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - coolify-data:/app/storage
+      - coolify-db:/app/database
+    environment:
+      - COOLIFY_SECRET_KEY=${COOLIFY_SECRET_KEY}
+      - COOLIFY_LETS_ENCRYPT_EMAIL=${LETS_ENCRYPT_EMAIL}
+    networks:
+      - hosthive-network
+    profiles:
+      - production
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: hosthive-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-hosthive}
+      POSTGRES_USER: ${POSTGRES_USER:-hosthive}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - hosthive-network
+    profiles:
+      - dev
+
+  # Redis for Caching & Sessions
+  redis:
+    image: redis:7-alpine
+    container_name: hosthive-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - hosthive-network
+    command: redis-server --appendonly yes
+    profiles:
+      - dev
+
+  # Traefik Reverse Proxy (For production routing)
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.yml:/traefik.yml
+      - ./acme.json:/acme.json
+    environment:
+      - TRAEFIK_API_INSECURE=true
+      - TRAEFIK_API_DASHBOARD=true
+      - TRAEFIK_ENTRYPOINTS_WEB_ADDRESS=:80
+      - TRAEFIK_ENTRYPOINTS_WEBSECURE_ADDRESS=:443
+      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL=${LETS_ENCRYPT_EMAIL}
+      - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_STORAGE=/acme.json
+    networks:
+      - hosthive-network
+    profiles:
+      - production
+
+  # Uptime Kuma (Health Checks & Monitoring)
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime-kuma
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+    networks:
+      - hosthive-network
+    profiles:
+      - monitoring
+
+volumes:
+  postgres-data:
+  redis-data:
+  coolify-data:
+  coolify-db:
+  uptime-kuma-data:
+
+networks:
+  hosthive-network:
+    driver: bridge
