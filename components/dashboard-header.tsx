@@ -25,6 +25,7 @@ import {
   Key,
   Building2,
   Globe,
+  Database,
 } from 'lucide-react'
 
 const mobileLinks = [
@@ -32,6 +33,7 @@ const mobileLinks = [
   { href: '/projects', label: 'Projects', icon: Folder },
   { href: '/deployments', label: 'Deployments', icon: Rocket },
   { href: '/domains', label: 'Domains', icon: Globe },
+  { href: '/databases', label: 'Databases', icon: Database },
   { href: '/organizations', label: 'Organizations', icon: Building2 },
   { href: '/api-keys', label: 'API Keys', icon: Key },
   { href: '/settings', label: 'Settings', icon: Settings },

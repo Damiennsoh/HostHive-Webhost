@@ -30,8 +30,9 @@ export default function LoginPage() {
     try {
       await login(email, password)
       router.push('/dashboard')
-    } catch {
-      setError('Invalid email or password')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Invalid email or password'
+      setError(message)
     }
   }
 
@@ -116,7 +117,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-white text-black hover:bg-white/90"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {isLoading ? (
                 <>

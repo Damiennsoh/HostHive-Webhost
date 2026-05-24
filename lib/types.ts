@@ -3,7 +3,7 @@ export interface User {
   email: string
   username: string
   avatar?: string
-  plan?: 'free' | 'startup' | 'pro' | 'enterprise'
+  plan?: 'free' | 'hobby' | 'startup' | 'pro' | 'team' | 'enterprise'
   createdAt: string
 }
 

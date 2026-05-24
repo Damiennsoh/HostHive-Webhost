@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { User } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { MOCK_AUTH_ENABLED } from '@/lib/mock-auth';
 
@@ -12,6 +11,7 @@ export type AuthResult = {
 
 export async function requireAuth(): Promise<AuthResult | NextResponse> {
   if (MOCK_AUTH_ENABLED) {
+    const { cookies } = await import('next/headers');
     const cookieStore = await cookies();
     if (cookieStore.get('hosthive_mock')?.value === '1') {
       return {
@@ -19,7 +19,7 @@ export async function requireAuth(): Promise<AuthResult | NextResponse> {
           id: 'mock_user',
           email: 'demo@hosthive.app',
           app_metadata: {},
-          user_metadata: { full_name: 'Demo User', plan: 'startup' },
+          user_metadata: { full_name: 'Demo User', plan: 'free' },
           aud: 'authenticated',
           created_at: new Date().toISOString(),
         } as User,

@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   avatar_url    TEXT,
   github_login  TEXT,
   github_token  TEXT,
-  plan          TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'pro', 'enterprise')),
+  plan          TEXT NOT NULL DEFAULT 'free',
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -19,13 +19,17 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
-  INSERT INTO public.profiles (id, email, full_name, avatar_url)
+  INSERT INTO public.profiles (id, email, full_name, avatar_url, plan)
   VALUES (
     NEW.id,
     NEW.email,
     NEW.raw_user_meta_data->>'full_name',
-    NEW.raw_user_meta_data->>'avatar_url'
-  );
+    NEW.raw_user_meta_data->>'avatar_url',
+    COALESCE(NEW.raw_user_meta_data->>'plan', 'free')
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
+    updated_at = NOW();
   RETURN NEW;
 END;
 $$;

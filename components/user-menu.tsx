@@ -21,8 +21,10 @@ interface UserMenuProps {
 
 const planLabels: Record<NonNullable<UserType['plan']>, string> = {
   free: 'Free',
+  hobby: 'Hobby',
   startup: 'Startup',
   pro: 'Pro',
+  team: 'Team',
   enterprise: 'Enterprise',
 }
 

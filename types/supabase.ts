@@ -20,7 +20,7 @@ export interface Database {
           avatar_url: string | null;
           github_login: string | null;
           github_token: string | null;
-          plan: 'free' | 'pro' | 'enterprise';
+          plan: 'free' | 'hobby' | 'startup' | 'pro' | 'team' | 'enterprise';
           created_at: string;
           updated_at: string;
         };
@@ -244,8 +244,51 @@ export interface Database {
           updated_at?: string;
         };
       };
+      managed_databases: {
+        Row: {
+          id: string;
+          user_id: string;
+          project_id: string | null;
+          name: string;
+          db_type: 'postgresql' | 'mysql' | 'redis';
+          coolify_uuid: string | null;
+          status: 'provisioning' | 'running' | 'stopped' | 'failed';
+          host: string | null;
+          port: number | null;
+          database_name: string | null;
+          username: string | null;
+          internal_network: string | null;
+          connection_url: string | null;
+          env_var_key: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          project_id?: string | null;
+          name: string;
+          db_type: 'postgresql' | 'mysql' | 'redis';
+          coolify_uuid?: string | null;
+          status?: 'provisioning' | 'running' | 'stopped' | 'failed';
+          host?: string | null;
+          port?: number | null;
+          database_name?: string | null;
+          username?: string | null;
+          internal_network?: string | null;
+          connection_url?: string | null;
+          env_var_key?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          project_id?: string | null;
+          status?: 'provisioning' | 'running' | 'stopped' | 'failed';
+          connection_url?: string | null;
+          updated_at?: string;
+        };
+      };
     };
-    Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: Record<string, never>;
   };
@@ -256,3 +299,4 @@ export type DbProject = Database['public']['Tables']['projects']['Row'];
 export type DbDeployment = Database['public']['Tables']['deployments']['Row'];
 export type DbEnvVar = Database['public']['Tables']['env_vars']['Row'];
 export type DbNotification = Database['public']['Tables']['notifications']['Row'];
+export type DbManagedDatabase = Database['public']['Tables']['managed_databases']['Row'];

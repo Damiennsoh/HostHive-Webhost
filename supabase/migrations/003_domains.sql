@@ -21,6 +21,11 @@ CREATE INDEX IF NOT EXISTS idx_custom_domains_user_id ON public.custom_domains(u
 
 ALTER TABLE public.custom_domains ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "users_select_own_domains" ON public.custom_domains;
+DROP POLICY IF EXISTS "users_insert_own_domains" ON public.custom_domains;
+DROP POLICY IF EXISTS "users_update_own_domains" ON public.custom_domains;
+DROP POLICY IF EXISTS "users_delete_own_domains" ON public.custom_domains;
+
 CREATE POLICY "users_select_own_domains"
   ON public.custom_domains FOR SELECT
   USING (auth.uid() = user_id);
@@ -38,6 +43,7 @@ CREATE POLICY "users_delete_own_domains"
   ON public.custom_domains FOR DELETE
   USING (auth.uid() = user_id);
 
+DROP TRIGGER IF EXISTS set_custom_domains_updated_at ON public.custom_domains;
 CREATE TRIGGER set_custom_domains_updated_at
   BEFORE UPDATE ON public.custom_domains
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();

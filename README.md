@@ -98,7 +98,9 @@ COOLIFY_API_URL=http://localhost:8000
 COOLIFY_API_TOKEN=
 ```
 
-Run Supabase migrations in order: `supabase/migrations/001_init.sql`, `002_rls.sql`, `003_domains.sql`.
+Run **`supabase/RUN_IN_SUPABASE.sql`** in the Supabase SQL Editor (single paste), or run migrations `001`–`004` in order. Set `NEXT_PUBLIC_MOCK_AUTH=false` for real authentication.
+
+For managed databases (PostgreSQL/MySQL/Redis), set `COOLIFY_SERVER_UUID` from Coolify → Servers.
 
 ### 4. Why Docker? (What each service does)
 

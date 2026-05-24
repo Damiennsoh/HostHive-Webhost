@@ -10,6 +10,7 @@ import {
   Settings,
   Globe,
   Github,
+  Database,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -20,6 +21,7 @@ const sidebarLinks = [
   { href: '/projects', label: 'Projects', icon: Folder },
   { href: '/deployments', label: 'Deployments', icon: Rocket },
   { href: '/domains', label: 'Domains', icon: Globe },
+  { href: '/databases', label: 'Databases', icon: Database },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]
 

@@ -17,6 +17,7 @@ const PROTECTED_PREFIXES = [
   '/projects',
   '/deployments',
   '/domains',
+  '/databases',
   '/settings',
   '/account',
   '/api-keys',
@@ -45,8 +46,10 @@ export async function middleware(request: NextRequest) {
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const useMockOnly =
+    process.env.NEXT_PUBLIC_MOCK_AUTH === 'true' && (!supabaseUrl || !supabaseKey);
 
-  if (!supabaseUrl || !supabaseKey || process.env.NEXT_PUBLIC_MOCK_AUTH === 'true') {
+  if (useMockOnly) {
     const { pathname } = request.nextUrl;
     const hasMockSession = request.cookies.get('hosthive_mock')?.value === '1';
 
@@ -63,6 +66,10 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
+    return supabaseResponse;
+  }
+
+  if (!supabaseUrl || !supabaseKey) {
     return supabaseResponse;
   }
 
@@ -97,12 +104,6 @@ export async function middleware(request: NextRequest) {
   if (user && isAuthRoute(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
-  }
-
-  if (!user && !isPublicRoute(pathname) && !isAuthRoute(pathname) && isProtectedRoute(pathname)) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
