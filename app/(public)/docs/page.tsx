@@ -1,230 +1,488 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { 
-  BookOpen, 
-  Rocket, 
-  Code2, 
-  Settings, 
-  Terminal,
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import {
+  BookOpen,
+  Rocket,
+  Upload,
   Globe,
-  Database,
   Shield,
-  ArrowRight
+  GitBranch,
+  Settings,
+  ChevronDown,
+  ExternalLink,
 } from "lucide-react"
 import Link from "next/link"
+import { APP_NAME } from "@/lib/brand"
+import { cn } from "@/lib/utils"
 
 const sections = [
   {
+    id: "getting-started",
     title: "Getting Started",
-    description: "Learn the basics and deploy your first project",
+    description: "Your first deploy in plain language",
     icon: Rocket,
     links: [
-      { title: "Quick Start Guide", href: "#" },
-      { title: "Creating Your First Project", href: "#" },
-      { title: "Connecting Git Repositories", href: "#" },
-      { title: "Environment Variables", href: "#" },
-    ]
+      {
+        title: "Create an account",
+        href: "/register",
+        summary:
+          "Sign up with email in under a minute. During beta, mock login works with any credentials so you can explore the dashboard.",
+      },
+      {
+        title: "Deploy a static site from your PC",
+        href: "/projects/new",
+        summary:
+          "On New Project, choose Local files, pick a folder with index.html, and click Deploy. No GitHub account needed.",
+      },
+      {
+        title: "Connect GitHub for auto-deploy",
+        href: "/projects/new",
+        summary:
+          "Choose GitHub as the source, pick a repo, and every push to your branch triggers a new build automatically.",
+      },
+      {
+        title: "Environment variables explained",
+        id: "env-vars",
+        summary:
+          "Secrets like API keys go in Environment Variables — not in your code. They are injected into your container at runtime.",
+      },
+    ],
   },
   {
-    title: "Frameworks",
-    description: "Framework-specific guides and best practices",
-    icon: Code2,
+    id: "local-files",
+    title: "Deploy from local files",
+    description: "HTML, CSS, and JS without Git",
+    icon: Upload,
     links: [
-      { title: "Next.js", href: "#" },
-      { title: "React", href: "#" },
-      { title: "Vue.js", href: "#" },
-      { title: "Nuxt", href: "#" },
-    ]
+      {
+        title: "Upload a folder or zip",
+        href: "/projects/new",
+        summary:
+          "Use the folder picker in your browser. Include index.html at the root. CSS and JS can live in subfolders.",
+      },
+      {
+        title: "What files are supported",
+        id: "static-files",
+        summary:
+          "Static assets: .html, .css, .js, images, fonts, and JSON. For React/Vue/Next apps, connect GitHub instead.",
+      },
+      {
+        title: "Fixing broken paths & assets",
+        id: "static-paths",
+        summary:
+          "Use relative paths (./style.css not C:\\Users\\...). Open index.html locally first to confirm links work.",
+      },
+      {
+        title: "When to use Git instead",
+        id: "git-vs-upload",
+        summary:
+          "Upload is best for simple sites. Use GitHub when you need builds, npm install, or team collaboration.",
+      },
+    ],
   },
   {
-    title: "Deployments",
-    description: "Learn about deployment workflows and settings",
-    icon: Globe,
+    id: "github",
+    title: "GitHub & webhooks",
+    description: "Push code → automatic rebuild",
+    icon: GitBranch,
     links: [
-      { title: "Production Deployments", href: "#" },
-      { title: "Preview Deployments", href: "#" },
-      { title: "Rollbacks", href: "#" },
-      { title: "Build Configuration", href: "#" },
-    ]
+      {
+        title: "Link your repository",
+        href: "/projects/new",
+        summary: "Select a repo from the list (demo mode shows sample repos). Set branch to main or your default.",
+      },
+      {
+        title: "How webhooks work",
+        id: "webhooks",
+        summary:
+          "GitHub notifies HostHive on each push. We verify the signature, queue a build, and deploy via Coolify.",
+      },
+      {
+        title: "Branches & preview deploys",
+        id: "branches",
+        summary:
+          "Production uses your main branch. Preview URLs for pull requests are on the Team plan roadmap.",
+      },
+      {
+        title: "Troubleshooting failed builds",
+        id: "build-failures",
+        summary:
+          "Check deploy emails, confirm package.json exists for Node apps, and verify env vars are set.",
+      },
+    ],
   },
   {
+    id: "domains",
     title: "Domains & SSL",
-    description: "Configure custom domains and certificates",
+    description: "Use your own domain with HTTPS",
     icon: Shield,
     links: [
-      { title: "Adding Custom Domains", href: "#" },
-      { title: "DNS Configuration", href: "#" },
-      { title: "SSL Certificates", href: "#" },
-      { title: "Redirects", href: "#" },
-    ]
+      {
+        title: "Add a custom domain",
+        href: "/domains",
+        summary: "Go to Domains → Add Domain, pick a project, and enter your domain (e.g. www.yoursite.com).",
+      },
+      {
+        title: "DNS records (CNAME, A, TXT)",
+        id: "dns",
+        summary:
+          "Copy the CNAME or A record HostHive shows into your registrar (Namecheap, GoDaddy, etc.). TXT verifies ownership.",
+      },
+      {
+        title: "Verify domain ownership",
+        id: "domain-verify",
+        summary: "After DNS propagates (up to 48h, often minutes), click Verify. SSL is issued automatically.",
+      },
+      {
+        title: "Free SSL certificates",
+        id: "ssl",
+        summary: "HTTPS is enabled once DNS is verified. Certificates renew automatically — no manual steps.",
+      },
+    ],
   },
   {
-    title: "Serverless Functions",
-    description: "Build and deploy serverless API routes",
-    icon: Terminal,
+    id: "platform",
+    title: "How HostHive works",
+    description: "Under the hood — simplified",
+    icon: Globe,
     links: [
-      { title: "Creating Functions", href: "#" },
-      { title: "API Routes", href: "#" },
-      { title: "Edge Functions", href: "#" },
-      { title: "Middleware", href: "#" },
-    ]
+      {
+        title: "Coolify & Docker containers",
+        id: "coolify",
+        summary:
+          "Each app runs in an isolated Docker container. Coolify detects your stack (Node, static, etc.) and builds it.",
+      },
+      {
+        title: "Traefik routing & SSL",
+        id: "traefik",
+        summary:
+          "Traefik routes traffic from your domain to the right container and terminates HTTPS at the edge.",
+      },
+      {
+        title: "Supabase auth & data",
+        id: "supabase",
+        summary:
+          "Login, projects, and domains are stored in Supabase with row-level security so users only see their own data.",
+      },
+      {
+        title: "Email alerts (Resend)",
+        id: "notifications",
+        summary: "Deploy success and failure emails are sent via Resend so you know when your site is live.",
+      },
+    ],
   },
   {
-    title: "Storage & Databases",
-    description: "Integrate databases and storage solutions",
-    icon: Database,
+    id: "billing",
+    title: "Account & billing",
+    description: "Plans inspired by Vercel, Render & Railway",
+    icon: Settings,
     links: [
-      { title: "Edge Storage", href: "#" },
-      { title: "PostgreSQL", href: "#" },
-      { title: "Blob Storage", href: "#" },
-      { title: "Redis", href: "#" },
-    ]
+      {
+        title: "Hobby vs Pro vs Team",
+        href: "/pricing",
+        summary:
+          "Hobby is free forever (like Vercel). Pro is $5/mo with 3 months free (like Render). New users get $5 credit (like Railway).",
+      },
+      {
+        title: "Launch pricing guarantee",
+        href: "/pricing#faq",
+        summary: "Early adopters keep launch rates for 12 months. We notify you before any price changes.",
+      },
+      {
+        title: "Billing & invoices",
+        href: "/settings?tab=billing",
+        summary: "View your plan, payment method, and invoices from Settings → Billing (coming at launch).",
+      },
+      {
+        title: "API keys (Team)",
+        href: "/api-keys",
+        summary: "Team plan includes API access to automate deploys from CI or scripts.",
+      },
+    ],
   },
 ]
 
 const popularGuides = [
   {
-    title: "Deploy a Next.js App",
-    description: "Step-by-step guide to deploying your Next.js application",
-    readTime: "5 min read"
+    id: "guide-static",
+    title: "Deploy HTML/CSS/JS from your laptop",
+    description: "Step-by-step: zip your site folder, upload, and get a live URL.",
+    readTime: "4 min read",
+    href: "/projects/new",
+    content: [
+      "Create a folder with index.html plus your CSS and JS files.",
+      "In HostHive, go to Projects → New Project → Local files.",
+      "Click Choose folder and select your site directory.",
+      "Name the project and click through to Deploy.",
+      "Your site will be live at something like my-site.hosthive.app within a minute.",
+    ],
   },
   {
-    title: "Configure Environment Variables",
-    description: "Learn how to securely manage environment variables",
-    readTime: "3 min read"
+    id: "guide-domain",
+    title: "Connect a custom domain",
+    description: "Copy DNS records from HostHive into your domain registrar.",
+    readTime: "5 min read",
+    href: "/domains",
+    content: [
+      "Open Domains in the dashboard and click Add Domain.",
+      "Enter your domain and link it to a project.",
+      "HostHive shows CNAME, A, and TXT records — copy each into your DNS panel.",
+      "Wait for propagation, then click Verify.",
+      "HTTPS turns on automatically once verification succeeds.",
+    ],
   },
   {
-    title: "Set Up a Custom Domain",
-    description: "Connect your own domain to your NimbusCloud project",
-    readTime: "4 min read"
+    id: "guide-env",
+    title: "Set environment variables",
+    description: "Store API keys and secrets safely — never commit them to Git.",
+    readTime: "3 min read",
+    content: [
+      "During project setup (step 3), add KEY=value pairs.",
+      "Mark sensitive values as secret so they are hidden in the UI.",
+      "Variables are injected when your container starts — not baked into the image.",
+      "Change them anytime from the project settings page.",
+      "Redeploy after updating vars so the new values take effect.",
+    ],
   },
   {
-    title: "Enable Analytics",
-    description: "Track visitor metrics and performance data",
-    readTime: "3 min read"
-  }
+    id: "guide-deploy-flow",
+    title: "What happens when you click Deploy?",
+    description: "From upload to container to public URL — the full journey.",
+    readTime: "6 min read",
+    content: [
+      "HostHive creates a project record and assigns a subdomain.",
+      "Your files or Git repo are sent to Coolify on our server.",
+      "Coolify builds a Docker image (or serves static files directly).",
+      "Traefik registers the route and provisions SSL.",
+      "You get a live URL and an email when the deploy finishes.",
+    ],
+  },
 ]
 
+function ExpandableSectionCard({
+  section,
+  isOpen,
+  onToggle,
+}: {
+  section: (typeof sections)[0]
+  isOpen: boolean
+  onToggle: () => void
+}) {
+  const Icon = section.icon
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border bg-card transition-all",
+        isOpen ? "border-primary/50" : "border-border hover:border-primary/30"
+      )}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-start gap-4 p-6 text-left"
+        aria-expanded={isOpen}
+      >
+        <div className="inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+          <Icon className="size-6" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-xl font-semibold">{section.title}</h3>
+            <ChevronDown
+              className={cn(
+                "size-5 shrink-0 text-muted-foreground transition-transform",
+                isOpen && "rotate-180"
+              )}
+            />
+          </div>
+          <p className="mt-1 text-muted-foreground">{section.description}</p>
+        </div>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <ul className="space-y-4 border-t border-border px-6 pb-6 pt-2">
+              {section.links.map((link) => (
+                <li key={link.title} className="rounded-lg bg-muted/40 p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-medium text-foreground">{link.title}</p>
+                    {link.href && (
+                      <Link
+                        href={link.href}
+                        className="inline-flex shrink-0 items-center gap-1 text-xs text-primary hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Open
+                        <ExternalLink className="size-3" />
+                      </Link>
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {link.summary}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function ExpandableGuideCard({
+  guide,
+  isOpen,
+  onToggle,
+}: {
+  guide: (typeof popularGuides)[0]
+  isOpen: boolean
+  onToggle: () => void
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-xl border bg-card transition-all",
+        isOpen ? "border-primary/50" : "border-border hover:border-primary/30"
+      )}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-start gap-4 p-6 text-left"
+        aria-expanded={isOpen}
+      >
+        <div className="rounded-lg bg-primary/10 p-3">
+          <Rocket className="size-5 text-primary" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-semibold">{guide.title}</h3>
+            <ChevronDown
+              className={cn(
+                "size-5 shrink-0 text-muted-foreground transition-transform",
+                isOpen && "rotate-180"
+              )}
+            />
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">{guide.description}</p>
+          <span className="mt-2 inline-block text-xs text-muted-foreground">{guide.readTime}</span>
+        </div>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <ol className="list-decimal space-y-2 border-t border-border px-6 pb-6 pl-12 pt-4 text-sm leading-relaxed text-muted-foreground">
+              {guide.content.map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+            <div className="border-t border-border px-6 pb-6">
+              <Link
+                href={guide.href}
+                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+              >
+                Try it now
+                <ExternalLink className="size-3.5" />
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 export default function DocsPage() {
+  const [openSection, setOpenSection] = useState<string | null>(null)
+  const [openGuide, setOpenGuide] = useState<string | null>(popularGuides[0].id)
+
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-24 border-b border-border">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
-        <div className="container mx-auto max-w-6xl px-4 relative">
+      <section className="relative overflow-hidden border-b border-border py-24">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
+        <div className="container relative mx-auto max-w-6xl px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2">
               <BookOpen className="size-4 text-primary" />
               <span className="text-sm font-medium">Documentation</span>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-balance mb-6">
-              Learn how to build with NimbusCloud
+            <h1 className="mb-6 text-4xl font-bold md:text-5xl lg:text-6xl">
+              Learn how to build with {APP_NAME}
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty mb-8">
-              Comprehensive guides, API references, and examples to help you ship faster.
+            <p className="mx-auto mb-4 max-w-2xl text-xl text-muted-foreground">
+              Click any topic to expand a short explanation. No DevOps background required.
             </p>
-            
-            {/* Search */}
-            <div className="max-w-xl mx-auto">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search documentation..."
-                  className="w-full h-14 rounded-xl border border-border bg-card px-6 pr-12 text-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                />
-                <kbd className="absolute right-4 top-1/2 -translate-y-1/2 px-2 py-1 rounded bg-muted text-muted-foreground text-sm font-mono">
-                  ⌘K
-                </kbd>
-              </div>
-            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Documentation Sections */}
       <section className="py-24">
         <div className="container mx-auto max-w-6xl px-4">
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2">
             {sections.map((section, index) => (
               <motion.div
-                key={section.title}
+                key={section.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="group rounded-2xl border border-border bg-card p-6 transition-all hover:border-primary/50"
+                transition={{ delay: index * 0.03 }}
               >
-                <div className="mb-4 inline-flex rounded-xl bg-primary/10 p-3 text-primary">
-                  <section.icon className="size-6" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{section.title}</h3>
-                <p className="text-muted-foreground mb-4">{section.description}</p>
-                <ul className="space-y-2">
-                  {section.links.map((link) => (
-                    <li key={link.title}>
-                      <Link 
-                        href={link.href}
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group/link"
-                      >
-                        <ArrowRight className="size-3 opacity-0 -ml-5 group-hover/link:opacity-100 group-hover/link:ml-0 transition-all" />
-                        {link.title}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                <ExpandableSectionCard
+                  section={section}
+                  isOpen={openSection === section.id}
+                  onToggle={() =>
+                    setOpenSection((prev) => (prev === section.id ? null : section.id))
+                  }
+                />
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Popular Guides */}
-      <section className="py-24 border-t border-border">
-        <div className="container mx-auto max-w-6xl px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Popular Guides</h2>
+      <section className="border-t border-border py-24">
+        <div className="container mx-auto max-w-4xl px-4">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">Popular guides</h2>
             <p className="text-muted-foreground">
-              The most frequently visited documentation pages
+              Click a guide to see the steps — then try it in the dashboard
             </p>
-          </motion.div>
-
-          <div className="grid gap-6 md:grid-cols-2">
+          </div>
+          <div className="space-y-4">
             {popularGuides.map((guide, index) => (
               <motion.div
-                key={guide.title}
+                key={guide.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ delay: index * 0.05 }}
               >
-                <Link 
-                  href="#"
-                  className="flex items-start gap-4 rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 group"
-                >
-                  <div className="rounded-lg bg-muted p-3">
-                    <Settings className="size-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors">
-                      {guide.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-2">{guide.description}</p>
-                    <span className="text-xs text-muted-foreground">{guide.readTime}</span>
-                  </div>
-                  <ArrowRight className="size-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                </Link>
+                <ExpandableGuideCard
+                  guide={guide}
+                  isOpen={openGuide === guide.id}
+                  onToggle={() =>
+                    setOpenGuide((prev) => (prev === guide.id ? null : guide.id))
+                  }
+                />
               </motion.div>
             ))}
           </div>

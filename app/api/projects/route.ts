@@ -2,12 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, isAuthError } from '@/lib/api-auth';
 import { getCoolifyClient } from '@/lib/coolify-client';
 import { slugify, mapProjectTypeToRuntime } from '@/lib/project-utils';
+import { createDemoDbProject, getDemoDbProjects } from '@/lib/demo-api';
 
 export async function GET() {
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
 
+  if (auth.isDemo) {
+    return NextResponse.json({ success: true, projects: getDemoDbProjects() }, { status: 200 });
+  }
+
   const { user, supabase } = auth;
+  if (!supabase) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const { data, error } = await supabase
     .from('projects')
@@ -26,8 +34,6 @@ export async function POST(request: NextRequest) {
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
 
-  const { user, supabase } = auth;
-
   try {
     const body = await request.json();
     const {
@@ -37,14 +43,41 @@ export async function POST(request: NextRequest) {
       project_type,
       build_command,
       start_command,
+      source,
     } = body;
 
-    if (!name || !repository_url || !repository_branch || !project_type) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!name) {
+      return NextResponse.json({ error: 'Project name is required' }, { status: 400 });
     }
 
     const slug = slugify(name);
-    const runtime = mapProjectTypeToRuntime(project_type);
+    const isUpload = source === 'upload' || project_type === 'static';
+    const repoUrl = repository_url ?? (isUpload ? 'upload://local' : '');
+    const branch = repository_branch ?? 'main';
+    const type = project_type ?? (isUpload ? 'static' : 'node');
+
+    if (!isUpload && !repoUrl) {
+      return NextResponse.json({ error: 'Missing repository URL' }, { status: 400 });
+    }
+
+    if (auth.isDemo) {
+      const project = createDemoDbProject({
+        name,
+        slug,
+        repository_url: repoUrl,
+        repository_branch: branch,
+        project_type: type,
+        source: isUpload ? 'upload' : 'github',
+      });
+      return NextResponse.json({ success: true, project }, { status: 201 });
+    }
+
+    const { user, supabase } = auth;
+    if (!supabase) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const runtime = mapProjectTypeToRuntime(type);
     const baseDomain = process.env.BASE_DOMAIN ?? 'hosthive.app';
     const assignedDomain = `${slug}.${baseDomain}`;
 
@@ -54,8 +87,8 @@ export async function POST(request: NextRequest) {
       const coolify = getCoolifyClient();
       const coolifyProject = await coolify.createProject({
         name,
-        git_repo: repository_url,
-        branch: repository_branch,
+        git_repo: repoUrl,
+        branch,
         build_command,
         start_command,
         runtime,
@@ -72,14 +105,14 @@ export async function POST(request: NextRequest) {
         name,
         slug,
         coolify_uuid: coolifyUuid,
-        git_repo_url: repository_url,
-        git_branch: repository_branch,
+        git_repo_url: repoUrl,
+        git_branch: branch,
         build_command: build_command ?? null,
         start_command: start_command ?? null,
         runtime,
-        framework: project_type,
+        framework: type,
         assigned_domain: assignedDomain,
-        status: coolifyUuid ? 'inactive' : 'inactive',
+        status: 'inactive',
       })
       .select()
       .single();

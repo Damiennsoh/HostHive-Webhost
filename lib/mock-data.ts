@@ -15,6 +15,7 @@ export const mockUser: User = {
   email: 'developer@example.com',
   username: 'developer',
   avatar: undefined,
+  plan: 'startup',
   createdAt: '2024-01-15T10:00:00Z',
 }
 
@@ -23,19 +24,19 @@ export const mockOrganizations: Organization[] = [
     id: 'org_1',
     name: 'Personal',
     slug: 'personal',
-    plan: 'pro',
+    plan: 'free',
   },
   {
     id: 'org_2',
-    name: 'Acme Corp',
-    slug: 'acme-corp',
-    plan: 'enterprise',
+    name: 'Pro Workspace',
+    slug: 'pro',
+    plan: 'pro',
   },
   {
     id: 'org_3',
     name: 'Startup Inc',
     slug: 'startup-inc',
-    plan: 'free',
+    plan: 'startup' as Organization['plan'],
   },
 ]
 

@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server';
 import { requireAuth, isAuthError } from '@/lib/api-auth';
 import { mapDbDeploymentToUi, mapDbProjectToUi } from '@/lib/map-db';
+import { buildDemoDashboardPayload } from '@/lib/demo-api';
 import type { DbDeployment, DbProject } from '@/types/supabase';
 
 export async function GET() {
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
 
+  if (auth.isDemo) {
+    return NextResponse.json(buildDemoDashboardPayload());
+  }
+
   const { user, supabase } = auth;
+  if (!supabase) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const { data: projects, error: projectsError } = await supabase
     .from('projects')

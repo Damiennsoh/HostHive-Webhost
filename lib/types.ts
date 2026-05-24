@@ -3,6 +3,7 @@ export interface User {
   email: string
   username: string
   avatar?: string
+  plan?: 'free' | 'startup' | 'pro' | 'enterprise'
   createdAt: string
 }
 
@@ -11,7 +12,7 @@ export interface Organization {
   name: string
   slug: string
   avatar?: string
-  plan: 'free' | 'pro' | 'enterprise'
+  plan: 'free' | 'pro' | 'enterprise' | 'startup'
 }
 
 export interface Project {

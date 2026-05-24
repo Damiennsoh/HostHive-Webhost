@@ -11,8 +11,18 @@ export async function GET(
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
 
-  const { user, supabase } = auth;
   const { id } = await params;
+
+  if (auth.isDemo) {
+    const { getDemoDbDeployments } = await import('@/lib/demo-api');
+    const deployments = getDemoDbDeployments().filter((d) => d.project_id === id);
+    return NextResponse.json({ success: true, deployments }, { status: 200 });
+  }
+
+  const { user, supabase } = auth;
+  if (!supabase) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const { data: project } = await supabase
     .from('projects')
@@ -45,8 +55,23 @@ export async function POST(
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
 
-  const { user, supabase } = auth;
   const { id } = await params;
+
+  if (auth.isDemo) {
+    const { createDemoDbDeployment, getDemoDbProjects } = await import('@/lib/demo-api');
+    const project = getDemoDbProjects().find((p) => p.id === id);
+    if (!project) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+    const deployment = createDemoDbDeployment(project);
+    return NextResponse.json({ success: true, deployment }, { status: 201 });
+  }
+
+  const { user, supabase } = auth;
+  if (!supabase) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const body = await request.json();
   const { branch, commit_sha, triggered_by } = body;
 

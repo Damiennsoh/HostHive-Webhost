@@ -62,7 +62,7 @@ export function PublicNavbar() {
             </Button>
           </Link>
           <Link href="/register">
-            <Button size="sm" className="bg-white text-black hover:bg-white/90">
+            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
               Get Started
             </Button>
           </Link>
@@ -111,7 +111,7 @@ export function PublicNavbar() {
                 </Button>
               </Link>
               <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
-                <Button className="w-full bg-white text-black hover:bg-white/90">
+                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                   Get Started
                 </Button>
               </Link>

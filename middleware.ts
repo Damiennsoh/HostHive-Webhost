@@ -46,7 +46,23 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseKey) {
+  if (!supabaseUrl || !supabaseKey || process.env.NEXT_PUBLIC_MOCK_AUTH === 'true') {
+    const { pathname } = request.nextUrl;
+    const hasMockSession = request.cookies.get('hosthive_mock')?.value === '1';
+
+    if (!hasMockSession && isProtectedRoute(pathname)) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      url.searchParams.set('redirectTo', pathname);
+      return NextResponse.redirect(url);
+    }
+
+    if (hasMockSession && isAuthRoute(pathname)) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/dashboard';
+      return NextResponse.redirect(url);
+    }
+
     return supabaseResponse;
   }
 

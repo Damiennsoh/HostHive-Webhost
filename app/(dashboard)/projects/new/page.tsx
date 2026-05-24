@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -15,7 +15,9 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  Rocket
+  Rocket,
+  Upload,
+  FolderOpen,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,11 +27,13 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 
 const steps = [
-  { id: 1, title: 'Repository', description: 'Select your repository' },
+  { id: 1, title: 'Source', description: 'GitHub or local files' },
   { id: 2, title: 'Configure', description: 'Configure your project' },
   { id: 3, title: 'Environment', description: 'Set environment variables' },
   { id: 4, title: 'Deploy', description: 'Review and deploy' },
 ]
+
+type DeploySource = 'github' | 'upload'
 
 interface EnvVar {
   key: string
@@ -39,9 +43,12 @@ interface EnvVar {
 
 export default function NewProjectPage() {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [currentStep, setCurrentStep] = useState(1)
+  const [deploySource, setDeploySource] = useState<DeploySource>('github')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRepo, setSelectedRepo] = useState<string | null>(null)
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [projectName, setProjectName] = useState('')
   const [branch, setBranch] = useState('main')
   const [framework, setFramework] = useState('nextjs')
@@ -95,20 +102,29 @@ export default function NewProjectPage() {
     setError('')
 
     try {
+      const isUpload = deploySource === 'upload'
       const repo = mockRepositories.find((r) => r.id === selectedRepo)
-      if (!repo) throw new Error('Select a repository first')
 
-      const projectType =
-        framework === 'docker' ? 'docker' : framework === 'static' ? 'static' : 'node'
+      if (!isUpload && !repo) throw new Error('Select a repository first')
+      if (isUpload && uploadedFiles.length === 0) throw new Error('Select files to upload')
+
+      const projectType = isUpload
+        ? 'static'
+        : framework === 'docker'
+          ? 'docker'
+          : framework === 'static'
+            ? 'static'
+            : 'node'
 
       const createRes = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: projectName,
-          repository_url: `https://github.com/${repo.fullName}`,
+          repository_url: isUpload ? undefined : `https://github.com/${repo!.fullName}`,
           repository_branch: branch,
           project_type: projectType,
+          source: deploySource,
         }),
       })
 
@@ -116,6 +132,17 @@ export default function NewProjectPage() {
       if (!createRes.ok) throw new Error(createData.error || 'Failed to create project')
 
       const projectId = createData.project.id as string
+
+      if (isUpload) {
+        const formData = new FormData()
+        uploadedFiles.forEach((file) => formData.append('files', file))
+        const uploadRes = await fetch(`/api/projects/${projectId}/upload`, {
+          method: 'POST',
+          body: formData,
+        })
+        const uploadData = await uploadRes.json()
+        if (!uploadRes.ok) throw new Error(uploadData.error || 'Failed to upload files')
+      }
 
       for (const envVar of envVars.filter((v) => v.key.trim())) {
         await fetch(`/api/projects/${projectId}/env`, {
@@ -126,7 +153,7 @@ export default function NewProjectPage() {
             value: envVar.value,
             is_secret: envVar.isSecret,
           }),
-        })
+        }).catch(() => {})
       }
 
       const deployRes = await fetch(`/api/projects/${projectId}/deployments`, {
@@ -146,10 +173,20 @@ export default function NewProjectPage() {
     }
   }
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    setUploadedFiles(files)
+    if (files.length && !projectName) {
+      const rootName = files[0].webkitRelativePath?.split('/')[0] ?? files[0].name.replace(/\.[^.]+$/, '')
+      setProjectName(rootName.replace(/[^a-z0-9-]/gi, '-').toLowerCase())
+    }
+    if (deploySource === 'upload') setFramework('static')
+  }
+
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return selectedRepo !== null
+        return deploySource === 'upload' ? uploadedFiles.length > 0 : selectedRepo !== null
       case 2:
         return projectName.trim() !== ''
       case 3:
@@ -231,12 +268,45 @@ export default function NewProjectPage() {
               className="space-y-6"
             >
               <div>
-                <h2 className="text-lg font-medium text-foreground">Select Repository</h2>
+                <h2 className="text-lg font-medium text-foreground">Choose deploy source</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Choose a repository to deploy from GitHub
+                  Deploy from GitHub or upload static files from your computer
                 </p>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDeploySource('github')}
+                  className={cn(
+                    'rounded-lg border p-4 text-left transition-colors',
+                    deploySource === 'github'
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary/40'
+                  )}
+                >
+                  <GitBranch className="mb-2 h-5 w-5 text-primary" />
+                  <p className="font-medium text-foreground">GitHub</p>
+                  <p className="text-xs text-muted-foreground">Auto-deploy on push</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeploySource('upload')}
+                  className={cn(
+                    'rounded-lg border p-4 text-left transition-colors',
+                    deploySource === 'upload'
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary/40'
+                  )}
+                >
+                  <Upload className="mb-2 h-5 w-5 text-primary" />
+                  <p className="font-medium text-foreground">Local files</p>
+                  <p className="text-xs text-muted-foreground">HTML, CSS, JS folder</p>
+                </button>
+              </div>
+
+              {deploySource === 'github' && (
+              <>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -252,16 +322,17 @@ export default function NewProjectPage() {
                 {filteredRepos.map((repo) => (
                   <button
                     key={repo.id}
+                    type="button"
                     onClick={() => handleRepoSelect(repo.id)}
                     className={cn(
                       'flex w-full items-center justify-between rounded-md border p-4 text-left transition-colors',
                       selectedRepo === repo.id
-                        ? 'border-white bg-muted'
-                        : 'border-border hover:border-zinc-600 hover:bg-muted/50'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-primary/40 hover:bg-muted/50'
                     )}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-zinc-800">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
                         <GitBranch className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div>
@@ -278,6 +349,40 @@ export default function NewProjectPage() {
                   </button>
                 ))}
               </div>
+              </>
+              )}
+
+              {deploySource === 'upload' && (
+                <div className="rounded-lg border border-dashed border-border p-8 text-center">
+                  <FolderOpen className="mx-auto h-10 w-10 text-primary" />
+                  <p className="mt-4 font-medium text-foreground">Upload your static site</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Select a folder containing index.html, CSS, and JS files
+                  </p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    // @ts-expect-error webkitdirectory is supported in Chromium browsers
+                    webkitdirectory=""
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                  <Button
+                    type="button"
+                    className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Choose folder
+                  </Button>
+                  {uploadedFiles.length > 0 && (
+                    <p className="mt-3 text-sm text-emerald-400">
+                      {uploadedFiles.length} file{uploadedFiles.length !== 1 ? 's' : ''} selected
+                    </p>
+                  )}
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -437,9 +542,17 @@ export default function NewProjectPage() {
                   <span className="text-sm font-medium text-foreground">{projectName}</span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Source</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {deploySource === 'upload' ? 'Local files' : 'GitHub'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Repository</span>
                   <span className="text-sm font-medium text-foreground">
-                    {mockRepositories.find(r => r.id === selectedRepo)?.fullName}
+                    {deploySource === 'upload'
+                      ? `${uploadedFiles.length} files`
+                      : mockRepositories.find((r) => r.id === selectedRepo)?.fullName}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -469,7 +582,7 @@ export default function NewProjectPage() {
               <Button
                 onClick={handleDeploy}
                 disabled={isDeploying}
-                className="w-full bg-white text-black hover:bg-white/90"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                 size="lg"
               >
                 {isDeploying ? (
@@ -504,7 +617,7 @@ export default function NewProjectPage() {
           <Button
             onClick={handleNext}
             disabled={!canProceed()}
-            className="bg-white text-black hover:bg-white/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             Continue
             <ArrowRight className="ml-2 h-4 w-4" />

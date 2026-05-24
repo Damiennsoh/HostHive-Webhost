@@ -1,115 +1,167 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Check, X } from "lucide-react"
+import { Check, X, Sparkles } from "lucide-react"
 import Link from "next/link"
+import { APP_NAME } from "@/lib/brand"
+
+const promos = [
+  {
+    label: "Vercel-style",
+    title: "Generous free tier",
+    detail: "Deploy hobby projects for $0 — no credit card, no time limit.",
+  },
+  {
+    label: "Render-style",
+    title: "3 months free on Pro",
+    detail: "Upgrade to Pro and pay nothing for your first 3 months (beta offer).",
+  },
+  {
+    label: "Railway-style",
+    title: "$5 welcome credit",
+    detail: "New accounts get $5 in platform credit during your first month.",
+  },
+]
 
 const plans = [
   {
     name: "Hobby",
-    description: "Perfect for personal projects and experiments",
-    price: "Free",
+    description: "For personal sites, learning, and side projects — like Vercel Hobby",
+    price: "$0",
     priceDetail: "forever",
+    badge: null as string | null,
     features: [
       { name: "Unlimited deployments", included: true },
-      { name: "100GB bandwidth/month", included: true },
-      { name: "SSL certificates", included: true },
+      { name: "3 active projects", included: true },
+      { name: "Static upload + GitHub deploy", included: true },
+      { name: "100 GB bandwidth / month", included: true },
+      { name: "Free SSL on *.hosthive.app", included: true },
       { name: "Preview deployments", included: true },
       { name: "Community support", included: true },
       { name: "Custom domains", included: false },
-      { name: "Team collaboration", included: false },
-      { name: "Analytics", included: false },
-      { name: "Priority support", included: false },
+      { name: "Team members", included: false },
     ],
-    cta: "Get Started",
+    cta: "Start for Free",
     href: "/register",
-    highlighted: false
+    highlighted: false,
   },
   {
     name: "Pro",
-    description: "For professional developers and small teams",
-    price: "$20",
-    priceDetail: "per user/month",
+    description: "For indie hackers and startups ready to go live — best value",
+    price: "$5",
+    priceDetail: "per month after trial",
+    badge: "3 months free",
     features: [
-      { name: "Unlimited deployments", included: true },
-      { name: "1TB bandwidth/month", included: true },
-      { name: "SSL certificates", included: true },
-      { name: "Preview deployments", included: true },
-      { name: "Email support", included: true },
-      { name: "Custom domains", included: true },
-      { name: "Team collaboration (5 members)", included: true },
-      { name: "Basic analytics", included: true },
+      { name: "Unlimited projects", included: true },
+      { name: "Everything in Hobby", included: true },
+      { name: "Custom domains + free SSL", included: true },
+      { name: "500 GB bandwidth / month", included: true },
+      { name: "Email deploy notifications", included: true },
+      { name: "Environment variables", included: true },
+      { name: "$5 welcome credit (1st month)", included: true },
+      { name: "3 team members", included: true },
       { name: "Priority support", included: false },
     ],
-    cta: "Start Free Trial",
+    cta: "Claim 3 Months Free",
     href: "/register?plan=pro",
-    highlighted: true
+    highlighted: true,
   },
   {
-    name: "Enterprise",
-    description: "For organizations with advanced needs",
-    price: "Custom",
-    priceDetail: "contact sales",
+    name: "Team",
+    description: "For agencies and growing teams shipping multiple products",
+    price: "$15",
+    priceDetail: "per month",
+    badge: null as string | null,
     features: [
-      { name: "Unlimited deployments", included: true },
-      { name: "Unlimited bandwidth", included: true },
-      { name: "SSL certificates", included: true },
-      { name: "Preview deployments", included: true },
-      { name: "24/7 dedicated support", included: true },
-      { name: "Custom domains", included: true },
-      { name: "Unlimited team members", included: true },
-      { name: "Advanced analytics", included: true },
-      { name: "SLA guarantee", included: true },
+      { name: "Unlimited everything", included: true },
+      { name: "Everything in Pro", included: true },
+      { name: "1 TB bandwidth / month", included: true },
+      { name: "10 team members", included: true },
+      { name: "Usage analytics", included: true },
+      { name: "Priority email support", included: true },
+      { name: "API access", included: true },
+      { name: "Shared environment groups", included: true },
+      { name: "SLA guarantee", included: false },
     ],
-    cta: "Contact Sales",
-    href: "/contact",
-    highlighted: false
-  }
+    cta: "Start Team Trial",
+    href: "/register?plan=team",
+    highlighted: false,
+  },
 ]
 
 const faqs = [
   {
-    question: "Can I change plans later?",
-    answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is prorated."
+    question: "How does this compare to Vercel, Render, and Railway?",
+    answer:
+      "We follow the same playbook: a generous free Hobby tier (like Vercel), 3 months free when you upgrade to Pro (like Render’s intro offers), and a $5 welcome credit for new accounts (like Railway’s trial). Prices are lower while we grow — we’ll adjust as usage scales.",
   },
   {
-    question: "What happens if I exceed my bandwidth limit?",
-    answer: "We will notify you when you reach 80% of your limit. You can upgrade your plan or purchase additional bandwidth as needed."
+    question: "Do I need a credit card to start?",
+    answer:
+      "No. Hobby is free forever with no card required. Pro and Team trials also work without a card during beta.",
   },
   {
-    question: "Do you offer discounts for startups?",
-    answer: "Yes! We offer a 50% discount for the first year to qualifying startups. Contact our sales team to learn more."
+    question: "Can I deploy without GitHub?",
+    answer:
+      "Yes. Upload HTML, CSS, and JS from your computer on any plan — no repository needed.",
   },
   {
-    question: "Is there a free trial for Pro?",
-    answer: "Yes, Pro comes with a 14-day free trial. No credit card required to start."
-  }
+    question: "What happens after the 3 months free on Pro?",
+    answer:
+      "Pro becomes $5/month. We email you before billing starts. Downgrade to Hobby anytime — your projects stay, paid features pause.",
+  },
+  {
+    question: "Will prices go up later?",
+    answer:
+      "Early adopters keep their launch pricing for 12 months. We’ll give plenty of notice before any changes.",
+  },
 ]
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
+    <motion.div className="min-h-screen">
       <section className="relative overflow-hidden py-24">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
-        <div className="container mx-auto max-w-6xl px-4 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
+        <div className="container relative mx-auto max-w-6xl px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-balance mb-6">
-              Simple, transparent pricing
+            <h1 className="mb-6 text-4xl font-bold md:text-5xl lg:text-6xl">
+              Simple pricing, startup-friendly
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-pretty">
-              Start for free, scale as you grow. No hidden fees, no surprises.
+            <p className="mx-auto max-w-2xl text-xl text-muted-foreground">
+              {APP_NAME} uses the same playbook as Vercel, Render, and Railway — generous free tier,
+              intro credits, and room to grow. Launch pricing stays low while we build our community.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Pricing Cards */}
+      <section className="pb-8">
+        <div className="container mx-auto max-w-6xl px-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            {promos.map((promo, i) => (
+              <motion.div
+                key={promo.title}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+                className="rounded-xl border border-primary/20 bg-primary/5 p-5"
+              >
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                  <Sparkles className="size-3" />
+                  {promo.label}
+                </span>
+                <p className="mt-3 font-semibold text-foreground">{promo.title}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{promo.detail}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="py-12">
         <div className="container mx-auto max-w-6xl px-4">
           <div className="grid gap-8 md:grid-cols-3">
@@ -118,35 +170,43 @@ export default function PricingPage() {
                 key={plan.name}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`relative rounded-2xl border ${
-                  plan.highlighted 
-                    ? "border-primary bg-primary/5 shadow-lg shadow-primary/10" 
+                transition={{ delay: index * 0.1 }}
+                className={`relative rounded-2xl border p-8 ${
+                  plan.highlighted
+                    ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
                     : "border-border bg-card"
-                } p-8`}
+                }`}
               >
                 {plan.highlighted && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="bg-primary text-primary-foreground text-sm font-medium px-4 py-1 rounded-full">
-                      Most Popular
+                    <span className="rounded-full bg-primary px-4 py-1 text-sm font-medium text-primary-foreground">
+                      Best for startups
                     </span>
                   </div>
                 )}
+                {plan.badge && !plan.highlighted && (
+                  <span className="mb-3 inline-block rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
+                    {plan.badge}
+                  </span>
+                )}
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                  <h3 className="mb-2 text-2xl font-bold">{plan.name}</h3>
                   <p className="text-muted-foreground">{plan.description}</p>
                 </div>
                 <div className="mb-6">
                   <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className="text-muted-foreground ml-2">{plan.priceDetail}</span>
+                  <span className="ml-2 text-muted-foreground">{plan.priceDetail}</span>
+                  {plan.badge && plan.highlighted && (
+                    <p className="mt-2 text-sm font-medium text-emerald-400">{plan.badge}</p>
+                  )}
                 </div>
-                <ul className="space-y-3 mb-8">
+                <ul className="mb-8 space-y-3">
                   {plan.features.map((feature) => (
                     <li key={feature.name} className="flex items-center gap-3">
                       {feature.included ? (
-                        <Check className="size-5 text-primary shrink-0" />
+                        <Check className="size-5 shrink-0 text-primary" />
                       ) : (
-                        <X className="size-5 text-muted-foreground/50 shrink-0" />
+                        <X className="size-5 shrink-0 text-muted-foreground/50" />
                       )}
                       <span className={feature.included ? "" : "text-muted-foreground/50"}>
                         {feature.name}
@@ -167,30 +227,31 @@ export default function PricingPage() {
               </motion.div>
             ))}
           </div>
+          <p className="mt-8 text-center text-sm text-muted-foreground">
+            Need dedicated infrastructure, SLA, or invoice billing?{" "}
+            <Link href="/contact" className="text-primary hover:underline">
+              Contact us for Enterprise
+            </Link>
+          </p>
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-24 border-t border-border">
+      <section id="faq" className="border-t border-border py-24">
         <div className="container mx-auto max-w-3xl px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
+            className="mb-12 text-center"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Frequently asked questions
-            </h2>
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">Frequently asked questions</h2>
             <p className="text-muted-foreground">
-              {"Can't find what you're looking for? "}
+              Questions?{" "}
               <Link href="/contact" className="text-primary hover:underline">
-                Contact our team
+                Reach out
               </Link>
             </p>
           </motion.div>
-
           <div className="space-y-6">
             {faqs.map((faq, index) => (
               <motion.div
@@ -198,16 +259,16 @@ export default function PricingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ delay: index * 0.05 }}
                 className="rounded-xl border border-border bg-card p-6"
               >
-                <h3 className="text-lg font-semibold mb-2">{faq.question}</h3>
-                <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
+                <h3 className="mb-2 text-lg font-semibold">{faq.question}</h3>
+                <p className="leading-relaxed text-muted-foreground">{faq.answer}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
-    </div>
+    </motion.div>
   )
 }

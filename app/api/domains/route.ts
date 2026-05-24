@@ -8,7 +8,27 @@ export async function GET() {
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
 
+  if (auth.isDemo) {
+    const { mockDomains, mockProjects } = await import('@/lib/mock-data');
+    const domains = mockDomains.map((d) => {
+      const project = mockProjects.find((p) => p.id === d.projectId);
+      return {
+        id: d.id,
+        domain: d.domain,
+        cname_target: `${project?.slug ?? 'app'}.hosthive.app`,
+        verification_status: d.status === 'active' ? 'verified' : 'pending',
+        ssl_status: d.ssl ? 'active' : 'pending',
+        project_id: d.projectId,
+        projects: project ? { name: project.name, slug: project.slug } : null,
+      };
+    });
+    return NextResponse.json({ success: true, domains }, { status: 200 });
+  }
+
   const { user, supabase } = auth;
+  if (!supabase) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const { data, error } = await supabase
     .from('custom_domains')
