@@ -30,47 +30,50 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - coolify-data:/app/storage
-      - coolify-db:/app/database
+      - coolify-ssh:/root/.ssh
+      - coolify-letsencrypt:/etc/letsencrypt
     environment:
-      - COOLIFY_SECRET_KEY=${COOLIFY_SECRET_KEY}
-      - COOLIFY_LETS_ENCRYPT_EMAIL=${LETS_ENCRYPT_EMAIL}
+      - APP_KEY=base64:fmAFUHIBhj/RIEo7xCkY25ECazyFsWiT2DE590RLCOg=
+      - APP_ENV=production
+      - DB_CONNECTION=pgsql
+      - DB_HOST=coolify-db
+      - DB_PORT=5432
+      - DB_DATABASE=coolify
+      - DB_USERNAME=coolify
+      - DB_PASSWORD=secure_password
+      - REDIS_HOST=coolify-redis
+      - REDIS_PORT=6379
     networks:
       - hosthive-network
-    profiles:
-      - production
 
-  # PostgreSQL Database
-  postgres:
+  # PostgreSQL Database (Used by Coolify and Dashboard)
+  coolify-db:
     image: postgres:16-alpine
-    container_name: hosthive-postgres
+    container_name: coolify-db
     restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-hosthive}
-      POSTGRES_USER: ${POSTGRES_USER:-hosthive}
+      POSTGRES_DB: ${POSTGRES_DB:-coolify}
+      POSTGRES_USER: ${POSTGRES_USER:-coolify}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - hosthive-network
-    profiles:
-      - dev
 
-  # Redis for Caching & Sessions
-  redis:
+  # Redis for Caching & Sessions (Used by Coolify and Dashboard)
+  coolify-redis:
     image: redis:7-alpine
-    container_name: hosthive-redis
+    container_name: coolify-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     networks:
       - hosthive-network
-    command: redis-server --appendonly yes
-    profiles:
-      - dev
 
   # Traefik Reverse Proxy (For production routing)
   traefik:
@@ -128,7 +131,8 @@ volumes:
   postgres-data:
   redis-data:
   coolify-data:
-  coolify-db:
+  coolify-ssh:
+  coolify-letsencrypt:
   uptime-kuma-data:
 
 networks:

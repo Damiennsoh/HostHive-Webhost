@@ -1,5 +1,23 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+
+// Upstash Redis configuration for Edge Runtime rate limiting
+const upstashRedis = 
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      })
+    : null;
+
+const ratelimit = upstashRedis 
+  ? new Ratelimit({
+      redis: upstashRedis,
+      limiter: Ratelimit.slidingWindow(10, '10 s'), // 10 requests per 10s per IP
+    })
+  : null;
 
 const PUBLIC_PREFIXES = [
   '/pricing',
@@ -41,7 +59,25 @@ function isAuthRoute(pathname: string): boolean {
   return pathname === '/login' || pathname === '/register';
 }
 
-export async function middleware(request: NextRequest) {
+/**
+ * Next.js Proxy (formerly Middleware)
+ * Handles Auth Protection, Rate Limiting, and Cookie Management
+ */
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // 1. Rate limit all API routes if Upstash is configured
+  if (pathname.startsWith('/api/') && ratelimit) {
+    const ip = request.ip ?? '127.0.0.1';
+    const { success } = await ratelimit.limit(ip);
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Try again later.' },
+        { status: 429 }
+      );
+    }
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -50,7 +86,6 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_MOCK_AUTH === 'true' && (!supabaseUrl || !supabaseKey);
 
   if (useMockOnly) {
-    const { pathname } = request.nextUrl;
     const hasMockSession = request.cookies.get('hosthive_mock')?.value === '1';
 
     if (!hasMockSession && isProtectedRoute(pathname)) {
@@ -88,11 +123,22 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
+  // Handle Supabase session with error catching for invalid refresh tokens
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch (err: any) {
+    // If we have an AuthApiError related to refresh tokens, we treat the user as logged out
+    console.warn('[Proxy] Auth session error:', err.message);
+    
+    // Clear cookies if refresh token is invalid to stop the error loop
+    if (err.code === 'refresh_token_not_found' || err.status === 400) {
+      const response = NextResponse.redirect(new URL('/login', request.url));
+      // You might want to manually clear specific supabase cookies here if needed
+      return response;
+    }
+  }
 
   if (!user && isProtectedRoute(pathname)) {
     const url = request.nextUrl.clone();
@@ -109,6 +155,10 @@ export async function middleware(request: NextRequest) {
 
   return supabaseResponse;
 }
+
+// Map the default export if Next.js expects a default middleware function
+// In some experimental versions, it might look for 'proxy' specifically
+export default proxy;
 
 export const config = {
   matcher: [
