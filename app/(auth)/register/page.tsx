@@ -35,10 +35,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
 
   const passwordStrength = useMemo(() => {
-    const passedRequirements = passwordRequirements.filter((req) =>
-      req.test(password)
-    ).length
-    return passedRequirements
+    return passwordRequirements.filter((req) => req.test(password)).length
   }, [password])
 
   const getStrengthColor = () => {
@@ -69,8 +66,17 @@ export default function RegisterPage() {
     }
 
     try {
-      await register(email, username, password)
-      router.push('/dashboard')
+      const result = await register(email, username, password)
+
+      if (result.needsEmailConfirmation) {
+        router.replace(
+          `/login?registered=1&confirmed=1&email=${encodeURIComponent(email)}`
+        )
+        return
+      }
+
+      router.replace(`/login?registered=1&confirmed=0&email=${encodeURIComponent(email)}`)
+      router.refresh()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Registration failed'
       setError(message)
@@ -84,17 +90,15 @@ export default function RegisterPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Logo */}
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white">
-              <span className="text-lg font-bold text-black">H</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+              <span className="text-lg font-bold text-primary-foreground">H</span>
             </div>
             <span className="text-xl font-semibold text-foreground">HostHive</span>
           </Link>
         </div>
 
-        {/* Card */}
         <div className="rounded-lg border border-border bg-card p-8 shadow-xl shadow-black/20">
           <div className="mb-6 text-center">
             <h1 className="text-2xl font-semibold text-foreground">Create your account</h1>
@@ -105,37 +109,39 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="rounded-md bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
+              <div className="rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
                 {error}
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground">Email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-zinc-600 focus:ring-0"
+                className="border-border bg-muted"
+                autoComplete="email"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-foreground">Username</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
                 type="text"
                 placeholder="johndoe"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-zinc-600 focus:ring-0"
+                className="border-border bg-muted"
+                autoComplete="username"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground">Password</Label>
+              <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -143,22 +149,18 @@ export default function RegisterPage() {
                   placeholder="Create a password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-muted border-border pr-10 text-foreground placeholder:text-muted-foreground focus:border-zinc-600 focus:ring-0"
+                  className="border-border bg-muted pr-10"
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
 
-              {/* Password strength indicator */}
               {password && (
                 <div className="mt-2 space-y-2">
                   <div className="flex gap-1">
@@ -174,22 +176,13 @@ export default function RegisterPage() {
                   </div>
                   <div className="space-y-1">
                     {passwordRequirements.map((req) => (
-                      <div
-                        key={req.label}
-                        className="flex items-center gap-2 text-xs"
-                      >
+                      <div key={req.label} className="flex items-center gap-2 text-xs">
                         {req.test(password) ? (
                           <Check className="h-3 w-3 text-emerald-400" />
                         ) : (
                           <X className="h-3 w-3 text-zinc-500" />
                         )}
-                        <span
-                          className={
-                            req.test(password)
-                              ? 'text-muted-foreground'
-                              : 'text-zinc-500'
-                          }
-                        >
+                        <span className={req.test(password) ? 'text-muted-foreground' : 'text-zinc-500'}>
                           {req.label}
                         </span>
                       </div>
@@ -200,7 +193,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-foreground">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
@@ -208,18 +201,15 @@ export default function RegisterPage() {
                   placeholder="Confirm your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="bg-muted border-border pr-10 text-foreground placeholder:text-muted-foreground focus:border-zinc-600 focus:ring-0"
+                  className="border-border bg-muted pr-10"
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
               {confirmPassword && password !== confirmPassword && (
@@ -230,7 +220,7 @@ export default function RegisterPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-white text-black hover:bg-white/90"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {isLoading ? (
                 <>
@@ -245,22 +235,11 @@ export default function RegisterPage() {
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/login" className="text-foreground hover:underline">
+            <Link href="/login" className="font-medium text-primary hover:underline">
               Sign in
             </Link>
           </div>
         </div>
-
-        <p className="mt-8 text-center text-xs text-muted-foreground">
-          By creating an account, you agree to our{' '}
-          <Link href="/terms" className="hover:text-foreground">
-            Terms of Service
-          </Link>{' '}
-          and{' '}
-          <Link href="/privacy" className="hover:text-foreground">
-            Privacy Policy
-          </Link>
-        </p>
       </motion.div>
     </div>
   )

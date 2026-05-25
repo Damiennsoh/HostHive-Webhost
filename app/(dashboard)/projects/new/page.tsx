@@ -22,9 +22,10 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { mockRepositories, frameworkOptions } from '@/lib/mock-data'
+import { frameworkOptions, mockRepositories } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
+import { useEffect } from 'react'
 
 const steps = [
   { id: 1, title: 'Source', description: 'GitHub or local files' },
@@ -40,6 +41,8 @@ interface EnvVar {
   value: string
   isSecret: boolean
 }
+
+const ENABLE_MOCK_REPOS = process.env.NEXT_PUBLIC_ENABLE_MOCK_REPOS === 'true'
 
 export default function NewProjectPage() {
   const router = useRouter()
@@ -57,10 +60,33 @@ export default function NewProjectPage() {
   ])
   const [isDeploying, setIsDeploying] = useState(false)
   const [error, setError] = useState('')
+  const [realRepos, setRealRepos] = useState<any[]>([])
+  const [loadingRepos, setLoadingRepos] = useState(false)
 
-  const filteredRepos = mockRepositories.filter((repo) =>
-    repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    repo.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+  useEffect(() => {
+    if (deploySource === 'github' && !ENABLE_MOCK_REPOS) {
+      setLoadingRepos(true)
+      // This endpoint will return real repositories for the authenticated user
+      fetch('/api/github/repos')
+        .then(r => r.json())
+        .then(data => {
+          if (data.repositories) setRealRepos(data.repositories)
+        })
+        .catch(err => {
+          console.error('[Fetch Repos]', err)
+          setError('Failed to fetch repositories. Ensure your GitHub account is connected.')
+        })
+        .finally(() => setLoadingRepos(false))
+    }
+  }, [deploySource])
+
+  const repositories = ENABLE_MOCK_REPOS 
+    ? mockRepositories 
+    : realRepos
+
+  const filteredRepos = (repositories || []).filter((repo: any) =>
+    repo.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    repo.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const handleNext = () => {
@@ -77,7 +103,7 @@ export default function NewProjectPage() {
 
   const handleRepoSelect = (repoId: string) => {
     setSelectedRepo(repoId)
-    const repo = mockRepositories.find(r => r.id === repoId)
+    const repo = repositories.find((r: any) => r.id.toString() === repoId.toString())
     if (repo) {
       setProjectName(repo.name)
     }
@@ -103,7 +129,7 @@ export default function NewProjectPage() {
 
     try {
       const isUpload = deploySource === 'upload'
-      const repo = mockRepositories.find((r) => r.id === selectedRepo)
+      const repo = repositories.find((r: any) => r.id.toString() === selectedRepo?.toString())
 
       if (!isUpload && !repo) throw new Error('Select a repository first')
       if (isUpload && uploadedFiles.length === 0) throw new Error('Select files to upload')
@@ -319,35 +345,51 @@ export default function NewProjectPage() {
               </div>
 
               <div className="max-h-80 space-y-2 overflow-y-auto">
-                {filteredRepos.map((repo) => (
-                  <button
-                    key={repo.id}
-                    type="button"
-                    onClick={() => handleRepoSelect(repo.id)}
-                    className={cn(
-                      'flex w-full items-center justify-between rounded-md border p-4 text-left transition-colors',
-                      selectedRepo === repo.id
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border hover:border-primary/40 hover:bg-muted/50'
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
-                        <GitBranch className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-foreground">{repo.name}</span>
-                          {repo.private && (
-                            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                          )}
+                {loadingRepos ? (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="mt-2 text-sm text-muted-foreground">Fetching your repositories...</p>
+                  </div>
+                ) : filteredRepos.length > 0 ? (
+                  filteredRepos.map((repo: any) => (
+                    <button
+                      key={repo.id}
+                      type="button"
+                      onClick={() => handleRepoSelect(repo.id)}
+                      className={cn(
+                        'flex w-full items-center justify-between rounded-md border p-4 text-left transition-colors',
+                        selectedRepo === repo.id
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:border-primary/40'
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        {repo.private ? (
+                          <Lock className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <GitBranch className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {repo.fullName || repo.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Updated {new Date(repo.updatedAt).toLocaleDateString()}
+                          </p>
                         </div>
-                        <p className="text-sm text-muted-foreground">{repo.fullName}</p>
                       </div>
-                    </div>
-                    <span className="text-xs text-muted-foreground">{repo.language}</span>
-                  </button>
-                ))}
+                      {selectedRepo === repo.id && (
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary">
+                          <Check className="h-3 w-3 text-primary-foreground" />
+                        </div>
+                      )}
+                    </button>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <p className="text-sm text-muted-foreground">No repositories found.</p>
+                  </div>
+                )}
               </div>
               </>
               )}

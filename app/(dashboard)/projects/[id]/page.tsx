@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState } from 'react'
+import { useEffect, use, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { 
@@ -11,14 +11,15 @@ import {
   Settings,
   Activity,
   Clock,
-  Rocket
+  Rocket,
+  Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/components/status-badge'
 import { DeploymentRow } from '@/components/deployment-row'
 import { FrameworkIcon } from '@/components/framework-icon'
-import { mockProjects, mockDeployments, mockDomains } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
+import { mapDbProjectToUi, mapDbDeploymentToUi } from '@/lib/map-db'
 
 const tabs = [
   { id: 'overview', label: 'Overview', icon: Activity },
@@ -30,10 +31,89 @@ const tabs = [
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const [activeTab, setActiveTab] = useState('overview')
-  
-  const project = mockProjects.find(p => p.id === resolvedParams.id) || mockProjects[0]
-  const projectDeployments = mockDeployments.filter(d => d.projectId === project.id)
-  const projectDomains = mockDomains.filter(d => d.projectId === project.id)
+  const [project, setProject] = useState<any>(null)
+  const [deployments, setDeployments] = useState<any[]>([])
+  const [domains, setDomains] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [isDeploying, setIsDeploying] = useState(false)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+      try {
+        const [projectRes, deploymentsRes, domainsRes] = await Promise.all([
+          fetch(`/api/projects/${resolvedParams.id}`),
+          fetch(`/api/projects/${resolvedParams.id}/deployments`),
+          fetch(`/api/projects/${resolvedParams.id}/domains`)
+        ])
+
+        const [projectData, deploymentsData, domainsData] = await Promise.all([
+          projectRes.json(),
+          deploymentsRes.json(),
+          domainsRes.json()
+        ])
+
+        if (projectData.success) setProject(mapDbProjectToUi(projectData.project))
+        if (deploymentsData.success) {
+          setDeployments(deploymentsData.deployments.map((d: any) => mapDbDeploymentToUi(d, projectData.project)))
+        }
+        if (domainsData.success) setDomains(domainsData.domains)
+      } catch (err) {
+        console.error('[Fetch Project Detail]', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [resolvedParams.id])
+
+  const handleManualDeploy = async () => {
+    setIsDeploying(true)
+    try {
+      const res = await fetch(`/api/projects/${resolvedParams.id}/deployments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ triggered_by: 'manual' })
+      })
+      const data = await res.json()
+      if (data.success) {
+        // Refresh deployments
+        const deploymentsRes = await fetch(`/api/projects/${resolvedParams.id}/deployments`)
+        const deploymentsData = await deploymentsRes.json()
+        if (deploymentsData.success) {
+          setDeployments(deploymentsData.deployments.map((d: any) => mapDbDeploymentToUi(d, project)))
+        }
+      }
+    } catch (err) {
+      console.error('[Manual Deploy]', err)
+    } finally {
+      setIsDeploying(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (!project) {
+    return (
+      <div className="space-y-4">
+        <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" />
+          Back to Projects
+        </Link>
+        <div className="rounded-lg border border-border bg-card p-12 text-center">
+          <h2 className="text-xl font-semibold text-foreground">Project not found</h2>
+          <p className="mt-2 text-muted-foreground">The project you are looking for does not exist or you do not have permission to view it.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -88,8 +168,16 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 Visit
               </Button>
             </a>
-            <Button className="bg-white text-black hover:bg-white/90">
-              <Rocket className="mr-2 h-4 w-4" />
+            <Button 
+              onClick={handleManualDeploy}
+              disabled={isDeploying}
+              className="bg-white text-black hover:bg-white/90"
+            >
+              {isDeploying ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Rocket className="mr-2 h-4 w-4" />
+              )}
               Deploy
             </Button>
           </div>
@@ -140,8 +228,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               <div className="border-b border-border px-4 py-3">
                 <h3 className="font-medium text-foreground">Recent Deployments</h3>
               </div>
-              {projectDeployments.length > 0 ? (
-                projectDeployments.slice(0, 5).map((deployment) => (
+              {deployments.length > 0 ? (
+                deployments.slice(0, 5).map((deployment) => (
                   <DeploymentRow 
                     key={deployment.id} 
                     deployment={deployment} 
@@ -185,7 +273,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <div className="rounded-lg border border-border bg-card p-4">
               <h3 className="font-medium text-foreground">Domains</h3>
               <div className="mt-4 space-y-2">
-                {projectDomains.map((domain) => (
+                {domains.map((domain) => (
                   <div 
                     key={domain.id}
                     className="flex items-center justify-between rounded-md bg-muted px-3 py-2"
@@ -212,8 +300,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           animate={{ opacity: 1, y: 0 }}
           className="rounded-lg border border-border bg-card"
         >
-          {projectDeployments.length > 0 ? (
-            projectDeployments.map((deployment) => (
+          {deployments.length > 0 ? (
+            deployments.map((deployment) => (
               <DeploymentRow 
                 key={deployment.id} 
                 deployment={deployment} 
@@ -240,7 +328,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         >
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {projectDomains.length} domain{projectDomains.length !== 1 ? 's' : ''} configured
+              {domains.length} domain{domains.length !== 1 ? 's' : ''} configured
             </p>
             <Button className="bg-white text-black hover:bg-white/90">
               Add Domain
@@ -248,7 +336,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           </div>
 
           <div className="rounded-lg border border-border bg-card">
-            {projectDomains.map((domain) => (
+            {domains.map((domain) => (
               <div 
                 key={domain.id}
                 className="flex items-center justify-between border-b border-border px-4 py-4 last:border-0"
@@ -258,22 +346,22 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   <div>
                     <p className="font-medium text-foreground">{domain.domain}</p>
                     <p className="text-xs text-muted-foreground">
-                      SSL {domain.ssl ? 'enabled' : 'disabled'}
+                      SSL {domain.ssl_status === 'active' ? 'enabled' : 'pending'}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={cn(
                     'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium',
-                    domain.status === 'active' 
+                    domain.verification_status === 'verified' 
                       ? 'bg-emerald-500/10 text-emerald-400'
                       : 'bg-amber-500/10 text-amber-400'
                   )}>
                     <span className={cn(
                       'h-1.5 w-1.5 rounded-full',
-                      domain.status === 'active' ? 'bg-emerald-400' : 'bg-amber-400'
+                      domain.verification_status === 'verified' ? 'bg-emerald-400' : 'bg-amber-400'
                     )} />
-                    {domain.status === 'active' ? 'Active' : 'Pending'}
+                    {domain.verification_status === 'verified' ? 'Active' : 'Pending'}
                   </span>
                   <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                     Configure

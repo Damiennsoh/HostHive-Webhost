@@ -16,6 +16,7 @@ export interface Database {
         Row: {
           id: string;
           email: string;
+          username: string;
           full_name: string | null;
           avatar_url: string | null;
           github_login: string | null;
@@ -27,6 +28,7 @@ export interface Database {
         Insert: {
           id: string;
           email: string;
+          username: string;
           full_name?: string | null;
           avatar_url?: string | null;
           github_login?: string | null;
@@ -37,6 +39,7 @@ export interface Database {
         };
         Update: {
           email?: string;
+          username?: string;
           full_name?: string | null;
           avatar_url?: string | null;
           github_login?: string | null;
