@@ -15,22 +15,28 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- 1. Profiles Table (extends auth.users)
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.profiles (
-  id            UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email         TEXT NOT NULL,
-  username      TEXT NOT NULL,
-  full_name     TEXT,
-  avatar_url    TEXT,
-  github_login  TEXT,
-  github_token  TEXT,
-  plan          TEXT NOT NULL DEFAULT 'free',
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id                UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email             TEXT NOT NULL,
+  username          TEXT NOT NULL,
+  full_name         TEXT,
+  avatar_url        TEXT,
+  github_id         TEXT,
+  github_login      TEXT,
+  github_token      TEXT,
+  github_avatar_url TEXT,
+  github_connected  BOOLEAN NOT NULL DEFAULT FALSE,
+  plan              TEXT NOT NULL DEFAULT 'free',
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Add missing columns if migrating from old schema
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS username TEXT,
-  ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free';
+  ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free',
+  ADD COLUMN IF NOT EXISTS github_id TEXT,
+  ADD COLUMN IF NOT EXISTS github_avatar_url TEXT,
+  ADD COLUMN IF NOT EXISTS github_connected BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- Fill in missing usernames so we can apply NOT NULL safely if needed
 UPDATE public.profiles

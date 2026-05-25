@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
+import { validateGitHubWebhook } from '@/lib/github';
 import { z } from 'zod';
 import { getCoolifyClient } from '@/lib/coolify-client';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -25,15 +25,11 @@ export async function POST(req: NextRequest) {
   }
 
   const rawBody = await req.text();
-  const signature = req.headers.get('x-hub-signature-256');
+  const signature = req.headers.get('x-hub-signature-256') ?? '';
+  const secret = process.env.GITHUB_WEBHOOK_SECRET ?? '';
 
-  if (process.env.GITHUB_WEBHOOK_SECRET) {
-    const hmac = crypto.createHmac('sha256', process.env.GITHUB_WEBHOOK_SECRET);
-    const digest = 'sha256=' + hmac.update(rawBody).digest('hex');
-
-    if (signature !== digest) {
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-    }
+  if (secret && !validateGitHubWebhook(rawBody, signature, secret)) {
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
   let payload: unknown;
@@ -63,7 +59,7 @@ export async function POST(req: NextRequest) {
     .select('*, profiles(email)')
     .eq('git_repo_url', repoUrl)
     .eq('git_branch', branch)
-    .single();
+    .single() as any;
 
   if (projectError || !project) {
     return NextResponse.json({ error: 'Project not found' }, { status: 404 });
@@ -94,13 +90,13 @@ export async function POST(req: NextRequest) {
         commit_author: head_commit?.author?.name ?? null,
         branch,
         started_at: new Date().toISOString(),
-      })
+      } as any)
       .select()
-      .single();
+      .single() as any;
 
     if (dbError) throw dbError;
 
-    await supabase.from('projects').update({ status: 'deploying' }).eq('id', project.id);
+    await (supabase.from('projects') as any).update({ status: 'deploying' }).eq('id', project.id);
 
     return NextResponse.json({
       success: true,
