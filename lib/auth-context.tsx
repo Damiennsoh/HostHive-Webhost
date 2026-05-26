@@ -12,10 +12,6 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { User, Organization } from './types';
 import {
   MOCK_AUTH_ENABLED,
-  getMockUser,
-  setMockUser,
-  clearMockUser,
-  createMockUser,
 } from './mock-auth';
 import {
   tryCreateClient,
@@ -23,6 +19,7 @@ import {
   supabaseConfigErrorMessage,
 } from '@/lib/supabase/client';
 import { getAppOrigin, mapAuthErrorMessage } from '@/lib/auth-errors';
+import { useRouter } from 'next/navigation';
 
 export interface RegisterResult {
   /** User must confirm email before sign-in (Supabase default). */
@@ -47,11 +44,17 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function organizationFromPlan(plan: User['plan'] = 'free'): Organization {
+  let orgPlan: Organization['plan'] = 'free';
+  if (plan === 'pro') orgPlan = 'pro';
+  else if (plan === 'startup') orgPlan = 'startup';
+  else if (plan === 'enterprise') orgPlan = 'enterprise';
+  else if (plan === 'team') orgPlan = 'pro'; // Map team to pro if needed
+  
   return {
     id: 'org_personal',
     name: 'Personal',
     slug: 'personal',
-    plan: plan === 'startup' || plan === 'team' ? plan : plan === 'pro' ? 'pro' : 'free',
+    plan: orgPlan,
   };
 }
 
@@ -60,18 +63,19 @@ async function loadProfile(
   supabaseUser: SupabaseUser
 ): Promise<User> {
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, avatar_url, plan')
+    .from('users')
+    .select('name, avatar_url')
     .eq('id', supabaseUser.id)
-    .maybeSingle();
+    .maybeSingle() as any;
 
-  const plan = (profile?.plan as User['plan']) ?? 'free';
+  // Plan is not currently in the users table, defaulting to 'free'
+  const plan: User['plan'] = 'free';
 
   return {
     id: supabaseUser.id,
     email: supabaseUser.email ?? '',
     username:
-      profile?.full_name ??
+      profile?.name ??
       supabaseUser.user_metadata?.full_name ??
       supabaseUser.email?.split('@')[0] ??
       'user',
@@ -82,11 +86,11 @@ async function loadProfile(
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [configError, setConfigError] = useState<string | null>(null);
-  const useMockAuth = MOCK_AUTH_ENABLED;
 
   const applyUser = useCallback((mapped: User | null) => {
     setUser(mapped);
@@ -94,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshProfile = useCallback(async () => {
-    if (useMockAuth || !isSupabaseConfigured()) return;
+    if (!isSupabaseConfigured()) return;
     const supabase = tryCreateClient();
     if (!supabase) return;
     const {
@@ -104,17 +108,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const mapped = await loadProfile(supabase, supabaseUser);
       applyUser(mapped);
     }
-  }, [useMockAuth, applyUser]);
+  }, [applyUser]);
 
   useEffect(() => {
-    if (useMockAuth) {
-      setConfigError(null);
-      const stored = getMockUser();
-      if (stored) applyUser(stored);
-      setIsLoading(false);
-      return;
-    }
-
     if (!isSupabaseConfigured()) {
       setConfigError(supabaseConfigErrorMessage());
       setIsLoading(false);
@@ -150,19 +146,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [useMockAuth, applyUser]);
+  }, [applyUser]);
 
   const login = useCallback(
     async (email: string, password: string) => {
       setIsLoading(true);
       try {
-        if (useMockAuth) {
-          const mockUser = createMockUser(email, undefined, 'free');
-          setMockUser(mockUser);
-          applyUser(mockUser);
-          return;
-        }
-
         const supabase = tryCreateClient();
         if (!supabase) throw new Error(supabaseConfigErrorMessage());
 
@@ -181,20 +170,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
       }
     },
-    [useMockAuth, applyUser]
+    [applyUser]
   );
 
   const register = useCallback(
     async (email: string, username: string, password: string): Promise<RegisterResult> => {
       setIsLoading(true);
       try {
-        if (useMockAuth) {
-          const mockUser = createMockUser(email, username, 'free');
-          setMockUser(mockUser);
-          applyUser(mockUser);
-          return { needsEmailConfirmation: false };
-        }
-
         const supabase = tryCreateClient();
         if (!supabase) throw new Error(supabaseConfigErrorMessage());
 
@@ -226,19 +208,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
       }
     },
-    [useMockAuth, applyUser]
+    [applyUser]
   );
 
   const logout = useCallback(async () => {
-    if (useMockAuth) {
-      clearMockUser();
-      applyUser(null);
-      return;
-    }
     const supabase = tryCreateClient();
     if (supabase) await supabase.auth.signOut();
     applyUser(null);
-  }, [useMockAuth, applyUser]);
+    router.push('/');
+  }, [applyUser, router]);
 
   const switchOrganization = useCallback(
     (_orgId: string) => {
@@ -257,7 +235,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         organizations,
         isAuthenticated: !!user,
         isLoading,
-        isDemoMode: useMockAuth,
+        isDemoMode: false,
         configError,
         login,
         register,

@@ -15,6 +15,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { APP_NAME } from '@/lib/brand'
+import { useAuth } from '@/lib/auth-context'
+import { UserMenu } from './user-menu'
 
 const sidebarLinks = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
@@ -27,10 +29,12 @@ const sidebarLinks = [
 
 export function DashboardSidebar() {
   const pathname = usePathname()
+  const { user, logout } = useAuth()
 
   return (
     <aside className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar lg:block">
       <div className="flex h-full flex-col">
+        {/* ... Logo Section ... */}
         <div className="flex h-16 items-center border-b border-sidebar-border px-6">
           <Link href="/dashboard" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
@@ -40,6 +44,7 @@ export function DashboardSidebar() {
           </Link>
         </div>
 
+        {/* ... Deploy Button ... */}
         <div className="p-4">
           <Link href="/projects/new">
             <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
@@ -79,16 +84,22 @@ export function DashboardSidebar() {
         </nav>
 
         <div className="border-t border-sidebar-border p-4">
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <Github className="h-4 w-4" />
-            GitHub
-            <span className="ml-auto h-2 w-2 rounded-full bg-emerald-400" title="Connect in Settings" />
-          </a>
+          {user ? (
+            <div className="px-1">
+              <UserMenu user={user} onLogout={logout} />
+            </div>
+          ) : (
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            >
+              <Github className="h-4 w-4" />
+              GitHub
+              <span className="ml-auto h-2 w-2 rounded-full bg-emerald-400" title="Connect in Settings" />
+            </a>
+          )}
         </div>
       </div>
     </aside>

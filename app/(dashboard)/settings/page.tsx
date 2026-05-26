@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/lib/auth-context'
 
 const settingsTabs = [
   { id: 'profile', label: 'Profile', icon: User },
@@ -18,10 +19,11 @@ const settingsTabs = [
 ]
 
 export default function SettingsPage() {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')
-  const [name, setName] = useState('Developer')
-  const [email, setEmail] = useState('developer@example.com')
-  const [username, setUsername] = useState('developer')
+  const [name, setName] = useState(user?.username ?? '')
+  const [email] = useState(user?.email ?? '')
+  const [username, setUsername] = useState(user?.username ?? '')
 
   return (
     <div className="space-y-6">
@@ -89,9 +91,11 @@ export default function SettingsPage() {
                       id="email"
                       type="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="bg-muted border-border text-foreground max-w-md"
+                      readOnly
+                      disabled
+                      className="bg-muted border-border text-muted-foreground max-w-md cursor-not-allowed opacity-70"
                     />
+                    <p className="text-xs text-muted-foreground">Email cannot be changed here. Contact support to update.</p>
                   </div>
 
                   <div className="space-y-2">

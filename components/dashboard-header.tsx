@@ -9,12 +9,10 @@ import { Input } from '@/components/ui/input'
 import { OrganizationSwitcher } from './organization-switcher'
 import { UserMenu } from './user-menu'
 import { useAuth } from '@/lib/auth-context'
-import { mockNotifications } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
@@ -43,7 +41,6 @@ export function DashboardHeader() {
   const pathname = usePathname()
   const { user, organization, organizations, logout, switchOrganization } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const unreadCount = mockNotifications.filter(n => !n.read).length
 
   if (!user) return null
 
@@ -104,23 +101,16 @@ export function DashboardHeader() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
                   <Bell className="h-5 w-5 text-muted-foreground" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-medium text-black">
-                      {unreadCount}
-                    </span>
-                  )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80 bg-card border-border">
                 <div className="px-3 py-2 border-b border-border">
                   <p className="text-sm font-medium text-foreground">Notifications</p>
                 </div>
-                {mockNotifications.map((notification) => (
-                  <DropdownMenuItem key={notification.id} className="flex flex-col items-start gap-1 p-3">
-                    <p className="text-sm font-medium text-foreground">{notification.title}</p>
-                    <p className="text-xs text-muted-foreground">{notification.message}</p>
-                  </DropdownMenuItem>
-                ))}
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Bell className="h-8 w-8 text-muted-foreground mb-2 opacity-50" />
+                  <p className="text-sm text-muted-foreground">No notifications yet</p>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
 
