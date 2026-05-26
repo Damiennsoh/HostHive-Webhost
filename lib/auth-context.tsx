@@ -163,24 +163,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        });
-
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Sign-in failed');
-
-        // The session is handled by cookies set in the API route
-        // We'll wait for the onAuthStateChange or manually refresh
         const supabase = tryCreateClient();
-        if (supabase) {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            const mapped = await loadProfile(supabase, user);
-            applyUser(mapped);
-          }
+        if (!supabase) throw new Error(supabaseConfigErrorMessage());
+
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        if (!data.session) {
+          throw new Error('Sign-in failed. Confirm your email if you recently registered.');
+        }
+        if (data.user) {
+          const mapped = await loadProfile(supabase, data.user);
+          applyUser(mapped);
         }
       } catch (err) {
         throw new Error(mapAuthErrorMessage(err));
@@ -202,30 +195,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { needsEmailConfirmation: false };
         }
 
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, name: username }),
+        const supabase = tryCreateClient();
+        if (!supabase) throw new Error(supabaseConfigErrorMessage());
+
+        const appOrigin = getAppOrigin();
+
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: username },
+            emailRedirectTo: `${appOrigin}/auth/callback?next=/dashboard`,
+          },
         });
+        if (error) throw error;
 
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Registration failed');
-
-        // Use the session status returned from the server
-        const needsConfirmation = !result.hasSession;
-        
-        if (!needsConfirmation) {
-          const supabase = tryCreateClient();
-          if (supabase) {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-              const mapped = await loadProfile(supabase, user);
-              applyUser(mapped);
-            }
-          }
+        // Email confirmation ON: session is null until user clicks email link
+        if (!data.session) {
+          return { needsEmailConfirmation: true };
         }
-        
-        return { needsEmailConfirmation: needsConfirmation };
+
+        if (data.user) {
+          const mapped = await loadProfile(supabase, data.user);
+          applyUser(mapped);
+        }
+        return { needsEmailConfirmation: false };
       } catch (err) {
         throw new Error(mapAuthErrorMessage(err));
       } finally {

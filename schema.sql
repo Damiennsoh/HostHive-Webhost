@@ -31,10 +31,22 @@ CREATE TABLE IF NOT EXISTS organizations (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Projects Table
+-- Project Groups (High-level containers)
+CREATE TABLE IF NOT EXISTS project_groups (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Projects Table (Services/Apps within a group)
 CREATE TABLE IF NOT EXISTS projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  project_group_id UUID REFERENCES project_groups(id) ON DELETE CASCADE, -- Link to group
   organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
   name VARCHAR(255) NOT NULL,
   description TEXT,
@@ -47,6 +59,7 @@ CREATE TABLE IF NOT EXISTS projects (
   build_command TEXT,
   start_command TEXT,
   custom_runtime TEXT,
+  coolify_uuid VARCHAR(255), -- Link to Coolify
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   last_deployed_at TIMESTAMP,
@@ -54,10 +67,33 @@ CREATE TABLE IF NOT EXISTS projects (
   CONSTRAINT valid_project_type CHECK (project_type IN ('node', 'python', 'go', 'ruby', 'php', 'static', 'docker'))
 );
 
+-- Managed Databases Table
+CREATE TABLE IF NOT EXISTS managed_databases (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  project_group_id UUID REFERENCES project_groups(id) ON DELETE SET NULL, -- Link to group
+  name VARCHAR(255) NOT NULL,
+  db_type VARCHAR(50) NOT NULL,
+  status VARCHAR(50) DEFAULT 'running',
+  coolify_uuid VARCHAR(255),
+  host TEXT,
+  port INTEGER,
+  database_name TEXT,
+  username TEXT,
+  internal_network TEXT,
+  connection_url TEXT,
+  env_var_key TEXT,
+  project_id UUID REFERENCES projects(id) ON DELETE SET NULL, -- Specifically linked service (deprecated in favor of group)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT valid_db_type CHECK (db_type IN ('postgresql', 'mysql', 'redis'))
+);
+
 -- Deployments Table
 CREATE TABLE IF NOT EXISTS deployments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   status VARCHAR(50) DEFAULT 'pending',
   commit_sha VARCHAR(40),
   commit_message TEXT,
@@ -74,6 +110,24 @@ CREATE TABLE IF NOT EXISTS deployments (
   CONSTRAINT valid_deployment_status CHECK (status IN ('pending', 'building', 'deploying', 'success', 'failed', 'cancelled')),
   CONSTRAINT valid_trigger CHECK (triggered_by IN ('manual', 'webhook'))
 );
+
+-- ... (Rest of existing indexes and triggers)
+
+CREATE INDEX idx_project_groups_user_id ON project_groups(user_id);
+CREATE INDEX idx_projects_group_id ON projects(project_group_id);
+CREATE INDEX idx_managed_databases_group_id ON managed_databases(project_group_id);
+
+-- Create triggers for updated_at timestamps
+CREATE TRIGGER update_project_groups_updated_at
+  BEFORE UPDATE ON project_groups
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_managed_databases_updated_at
+  BEFORE UPDATE ON managed_databases
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
 
 -- Domains Table
 CREATE TABLE IF NOT EXISTS domains (

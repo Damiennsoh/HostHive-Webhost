@@ -1,7 +1,5 @@
-'use client'
-
-import { useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useRef, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   ArrowLeft, 
@@ -18,20 +16,22 @@ import {
   Rocket,
   Upload,
   FolderOpen,
+  Layers,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { frameworkOptions, mockRepositories } from '@/lib/mock-data'
+import { mockRepositories, frameworkOptions } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import { useEffect } from 'react'
+import type { ProjectGroup } from '@/lib/types'
 
 const steps = [
-  { id: 1, title: 'Source', description: 'GitHub or local files' },
-  { id: 2, title: 'Configure', description: 'Configure your project' },
-  { id: 3, title: 'Environment', description: 'Set environment variables' },
-  { id: 4, title: 'Deploy', description: 'Review and deploy' },
+  { id: 1, title: 'Project', description: 'Select or create a container' },
+  { id: 2, title: 'Source', description: 'GitHub or local files' },
+  { id: 3, title: 'Configure', description: 'Configure your project' },
+  { id: 4, title: 'Environment', description: 'Set environment variables' },
+  { id: 5, title: 'Deploy', description: 'Review and deploy' },
 ]
 
 type DeploySource = 'github' | 'upload'
@@ -42,12 +42,14 @@ interface EnvVar {
   isSecret: boolean
 }
 
-const ENABLE_MOCK_REPOS = process.env.NEXT_PUBLIC_ENABLE_MOCK_REPOS === 'true'
-
 export default function NewProjectPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [currentStep, setCurrentStep] = useState(1)
+  const [groups, setGroups] = useState<ProjectGroup[]>([])
+  const [projectGroupId, setProjectGroupId] = useState<string | 'new'>(searchParams.get('groupId') || '')
+  const [newGroupName, setNewGroupName] = useState('')
   const [deploySource, setDeploySource] = useState<DeploySource>('github')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRepo, setSelectedRepo] = useState<string | null>(null)
@@ -60,37 +62,25 @@ export default function NewProjectPage() {
   ])
   const [isDeploying, setIsDeploying] = useState(false)
   const [error, setError] = useState('')
-  const [realRepos, setRealRepos] = useState<any[]>([])
-  const [loadingRepos, setLoadingRepos] = useState(false)
 
   useEffect(() => {
-    if (deploySource === 'github' && !ENABLE_MOCK_REPOS) {
-      setLoadingRepos(true)
-      // This endpoint will return real repositories for the authenticated user
-      fetch('/api/github/repos')
-        .then(r => r.json())
-        .then(data => {
-          if (data.repositories) setRealRepos(data.repositories)
-        })
-        .catch(err => {
-          console.error('[Fetch Repos]', err)
-          setError('Failed to fetch repositories. Ensure your GitHub account is connected.')
-        })
-        .finally(() => setLoadingRepos(false))
-    }
-  }, [deploySource])
+    fetch('/api/project-groups')
+      .then(r => r.json())
+      .then(json => {
+        if (json.success) {
+          setGroups(json.groups)
+          // If pre-selected via URL, and it exists in groups, we are good
+        }
+      })
+  }, [])
 
-  const repositories = ENABLE_MOCK_REPOS 
-    ? mockRepositories 
-    : realRepos
-
-  const filteredRepos = (repositories || []).filter((repo: any) =>
-    repo.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    repo.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredRepos = mockRepositories.filter((repo) =>
+    repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    repo.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const handleNext = () => {
-    if (currentStep < 4) {
+    if (currentStep < 5) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -103,7 +93,7 @@ export default function NewProjectPage() {
 
   const handleRepoSelect = (repoId: string) => {
     setSelectedRepo(repoId)
-    const repo = repositories.find((r: any) => r.id.toString() === repoId.toString())
+    const repo = mockRepositories.find(r => r.id === repoId)
     if (repo) {
       setProjectName(repo.name)
     }
@@ -129,7 +119,7 @@ export default function NewProjectPage() {
 
     try {
       const isUpload = deploySource === 'upload'
-      const repo = repositories.find((r: any) => r.id.toString() === selectedRepo?.toString())
+      const repo = mockRepositories.find((r) => r.id === selectedRepo)
 
       if (!isUpload && !repo) throw new Error('Select a repository first')
       if (isUpload && uploadedFiles.length === 0) throw new Error('Select files to upload')
@@ -142,6 +132,19 @@ export default function NewProjectPage() {
             ? 'static'
             : 'node'
 
+      let finalGroupId = projectGroupId
+
+      if (projectGroupId === 'new' && newGroupName) {
+        const groupRes = await fetch('/api/project-groups', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: newGroupName })
+        })
+        const groupData = await groupRes.json()
+        if (!groupRes.ok) throw new Error(groupData.error || 'Failed to create project group')
+        finalGroupId = groupData.group.id
+      }
+
       const createRes = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -151,6 +154,7 @@ export default function NewProjectPage() {
           repository_branch: branch,
           project_type: projectType,
           source: deploySource,
+          project_group_id: finalGroupId || null,
         }),
       })
 
@@ -212,12 +216,14 @@ export default function NewProjectPage() {
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return deploySource === 'upload' ? uploadedFiles.length > 0 : selectedRepo !== null
+        return projectGroupId !== '' && (projectGroupId !== 'new' || newGroupName.trim() !== '')
       case 2:
-        return projectName.trim() !== ''
+        return deploySource === 'upload' ? uploadedFiles.length > 0 : selectedRepo !== null
       case 3:
-        return true
+        return projectName.trim() !== ''
       case 4:
+        return true
+      case 5:
         return true
       default:
         return false
@@ -284,10 +290,92 @@ export default function NewProjectPage() {
       {/* Step Content */}
       <div className="rounded-lg border border-border bg-card p-6">
         <AnimatePresence mode="wait">
-          {/* Step 1: Repository Selection */}
+          {/* Step 1: Project Group Selection */}
           {currentStep === 1 && (
             <motion.div
               key="step1"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-6"
+            >
+              <div>
+                <h2 className="text-lg font-medium text-foreground">Select Project</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Choose a project to add this service to, or create a new one.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => setProjectGroupId('new')}
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg border p-4 text-left transition-colors',
+                      projectGroupId === 'new'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-primary/40'
+                    )}
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Plus className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">New Project</p>
+                      <p className="text-xs text-muted-foreground">Create a fresh container</p>
+                    </div>
+                  </button>
+
+                  {groups.map((group) => (
+                    <button
+                      key={group.id}
+                      type="button"
+                      onClick={() => setProjectGroupId(group.id)}
+                      className={cn(
+                        'flex items-center gap-3 rounded-lg border p-4 text-left transition-colors',
+                        projectGroupId === group.id
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:border-primary/40'
+                      )}
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800 text-zinc-400">
+                        <Layers className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-foreground truncate">{group.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {group.id.slice(0, 8)}...
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {projectGroupId === 'new' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="space-y-2 pt-2"
+                  >
+                    <Label htmlFor="newGroupName">Project Name</Label>
+                    <Input
+                      id="newGroupName"
+                      placeholder="e.g. My Awesome Startup"
+                      value={newGroupName}
+                      onChange={(e) => setNewGroupName(e.target.value)}
+                      className="bg-muted border-border"
+                    />
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 2: Repository Selection */}
+          {currentStep === 2 && (
+            <motion.div
+              key="step2"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -345,51 +433,35 @@ export default function NewProjectPage() {
               </div>
 
               <div className="max-h-80 space-y-2 overflow-y-auto">
-                {loadingRepos ? (
-                  <div className="flex flex-col items-center justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <p className="mt-2 text-sm text-muted-foreground">Fetching your repositories...</p>
-                  </div>
-                ) : filteredRepos.length > 0 ? (
-                  filteredRepos.map((repo: any) => (
-                    <button
-                      key={repo.id}
-                      type="button"
-                      onClick={() => handleRepoSelect(repo.id)}
-                      className={cn(
-                        'flex w-full items-center justify-between rounded-md border p-4 text-left transition-colors',
-                        selectedRepo === repo.id
-                          ? 'border-primary bg-primary/10'
-                          : 'border-border hover:border-primary/40'
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        {repo.private ? (
-                          <Lock className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <GitBranch className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <div>
-                          <p className="text-sm font-medium text-foreground">
-                            {repo.fullName || repo.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Updated {new Date(repo.updatedAt).toLocaleDateString()}
-                          </p>
-                        </div>
+                {filteredRepos.map((repo) => (
+                  <button
+                    key={repo.id}
+                    type="button"
+                    onClick={() => handleRepoSelect(repo.id)}
+                    className={cn(
+                      'flex w-full items-center justify-between rounded-md border p-4 text-left transition-colors',
+                      selectedRepo === repo.id
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-primary/40 hover:bg-muted/50'
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
+                        <GitBranch className="h-5 w-5 text-muted-foreground" />
                       </div>
-                      {selectedRepo === repo.id && (
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary">
-                          <Check className="h-3 w-3 text-primary-foreground" />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-foreground">{repo.name}</span>
+                          {repo.private && (
+                            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
                         </div>
-                      )}
-                    </button>
-                  ))
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-8">
-                    <p className="text-sm text-muted-foreground">No repositories found.</p>
-                  </div>
-                )}
+                        <p className="text-sm text-muted-foreground">{repo.fullName}</p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{repo.language}</span>
+                  </button>
+                ))}
               </div>
               </>
               )}
@@ -429,7 +501,7 @@ export default function NewProjectPage() {
           )}
 
           {/* Step 2: Configuration */}
-          {currentStep === 2 && (
+          {currentStep === 3 && (
             <motion.div
               key="step2"
               initial={{ opacity: 0, x: 20 }}
@@ -491,7 +563,7 @@ export default function NewProjectPage() {
           )}
 
           {/* Step 3: Environment Variables */}
-          {currentStep === 3 && (
+          {currentStep === 4 && (
             <motion.div
               key="step3"
               initial={{ opacity: 0, x: 20 }}
@@ -563,7 +635,7 @@ export default function NewProjectPage() {
           )}
 
           {/* Step 4: Review & Deploy */}
-          {currentStep === 4 && (
+          {currentStep === 5 && (
             <motion.div
               key="step4"
               initial={{ opacity: 0, x: 20 }}
@@ -655,7 +727,7 @@ export default function NewProjectPage() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
-        {currentStep < 4 && (
+        {currentStep < 5 && (
           <Button
             onClick={handleNext}
             disabled={!canProceed()}

@@ -1,9 +1,7 @@
 import type { User } from './types';
 import { isSupabaseConfigured as checkSupabaseEnv } from './supabase/env';
 
-export const MOCK_AUTH_ENABLED =
-  process.env.NEXT_PUBLIC_MOCK_AUTH === 'true' ||
-  process.env.NEXT_PUBLIC_MOCK_AUTH === '1';
+export const MOCK_AUTH_ENABLED = false;
 
 const STORAGE_KEY = 'hosthive_mock_user';
 const COOKIE_NAME = 'hosthive_mock';

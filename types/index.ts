@@ -21,6 +21,16 @@ export enum ProjectStatus {
   DELETED = 'deleted',
 }
 
+export interface ProjectGroup {
+  id: string;
+  user_id: string;
+  organization_id?: string;
+  name: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export enum ProjectType {
   STATIC = 'static',
   NODE = 'node',
@@ -33,6 +43,8 @@ export enum ProjectType {
 export interface Project {
   id: string;
   user_id: string;
+  project_group_id?: string;
+  organization_id?: string;
   name: string;
   description?: string;
   repository_url: string;
@@ -43,9 +55,29 @@ export interface Project {
   environment_variables: Record<string, string>;
   build_command?: string;
   start_command?: string;
+  coolify_uuid?: string;
   created_at: string;
   updated_at: string;
   last_deployed_at?: string;
+}
+
+export interface ManagedDatabase {
+  id: string;
+  user_id: string;
+  project_group_id?: string;
+  name: string;
+  db_type: 'postgresql' | 'mysql' | 'redis';
+  status: string;
+  coolify_uuid?: string;
+  host?: string;
+  port?: number;
+  database_name?: string;
+  username?: string;
+  internal_network?: string;
+  connection_url?: string;
+  env_var_key?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // Deployments

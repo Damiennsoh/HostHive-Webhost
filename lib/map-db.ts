@@ -1,5 +1,7 @@
-import type { DbDeployment, DbProject } from '@/types/supabase';
-import type { Deployment, DeploymentStatus, Framework, Project } from '@/lib/types';
+import type { DbDeployment, DbProject, DbManagedDatabase, Database } from '@/types/supabase';
+import type { Deployment, DeploymentStatus, Framework, Project, ProjectGroup, ManagedDatabase } from '@/lib/types';
+
+type DbProjectGroup = Database['public']['Tables']['project_groups']['Row'];
 
 export function mapProjectStatus(status: DbProject['status']): DeploymentStatus {
   switch (status) {
@@ -33,6 +35,18 @@ export function mapDeploymentStatus(status: DbDeployment['status']): DeploymentS
   }
 }
 
+export function mapDbProjectGroupToUi(group: DbProjectGroup): ProjectGroup {
+  return {
+    id: group.id,
+    userId: group.user_id,
+    organizationId: group.organization_id || undefined,
+    name: group.name,
+    description: group.description || undefined,
+    createdAt: group.created_at,
+    updatedAt: group.updated_at,
+  };
+}
+
 export function mapDbProjectToUi(project: DbProject): Project {
   return {
     id: project.id,
@@ -43,11 +57,35 @@ export function mapDbProjectToUi(project: DbProject): Project {
     status: mapProjectStatus(project.status),
     lastDeployment: new Date(project.updated_at).toLocaleDateString(),
     organizationId: 'personal',
+    projectGroupId: project.project_group_id || undefined,
     createdAt: project.created_at,
-    repository: project.git_repo_url.replace('https://github.com/', ''),
-    branch: project.git_branch,
+    updatedAt: project.updated_at,
+    repository: project.git_repo_url?.replace('https://github.com/', '') || '',
+    branch: project.git_branch || 'main',
   };
 }
+
+export function mapDbManagedDatabaseToUi(db: DbManagedDatabase): ManagedDatabase {
+  return {
+    id: db.id,
+    userId: db.user_id,
+    projectGroupId: db.project_group_id || undefined,
+    name: db.name,
+    dbType: db.db_type as 'postgresql' | 'mysql' | 'redis',
+    status: db.status || 'unknown',
+    coolifyUuid: db.coolify_uuid || undefined,
+    host: db.host || undefined,
+    port: db.port || undefined,
+    databaseName: db.database_name || undefined,
+    username: db.username || undefined,
+    internalNetwork: db.internal_network || undefined,
+    connectionUrl: db.connection_url || undefined,
+    envVarKey: db.env_var_key || undefined,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
+}
+
 
 export function mapDbDeploymentToUi(
   deployment: DbDeployment,
@@ -71,3 +109,4 @@ export function mapDbDeploymentToUi(
     url: domain ? `https://${domain}` : undefined,
   };
 }
+

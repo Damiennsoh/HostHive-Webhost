@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createClient();
-    let { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -34,26 +33,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    // Auto-confirm user in development if session is missing but registration succeeded
-    if (data.user && !data.session) {
-      try {
-        const admin = createAdminClient();
-        await admin.auth.admin.updateUserById(data.user.id, { email_confirm: true });
-        
-        // After confirmation, we can try to sign in to get a session
-        const login = await supabase.auth.signInWithPassword({ email, password });
-        if (!login.error && login.data.session) {
-          data.session = login.data.session;
-        }
-      } catch (adminErr) {
-        console.error('[Admin Auto-Confirm Signup Error]', adminErr);
-      }
-    }
-
     return NextResponse.json(
       {
         success: true,
-        hasSession: !!data.session,
         user: {
           id: data.user?.id,
           email: data.user?.email,

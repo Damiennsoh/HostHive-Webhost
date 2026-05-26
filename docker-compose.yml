@@ -26,54 +26,57 @@ services:
     container_name: coolify
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8000:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - coolify-data:/app/storage
-      - coolify-ssh:/root/.ssh
-      - coolify-letsencrypt:/etc/letsencrypt
+      - coolify-db:/app/database
     environment:
-      - APP_KEY=base64:fmAFUHIBhj/RIEo7xCkY25ECazyFsWiT2DE590RLCOg=
-      - APP_ENV=production
-      - DB_CONNECTION=pgsql
+      - APP_KEY=base64:NVAseQVccBPkw/WifQPk1hDOGR6/AZiAAmrD+0oHqVc=
       - DB_HOST=coolify-db
       - DB_PORT=5432
       - DB_DATABASE=coolify
       - DB_USERNAME=coolify
       - DB_PASSWORD=secure_password
-      - REDIS_HOST=coolify-redis
-      - REDIS_PORT=6379
+      - COOLIFY_SECRET_KEY=${COOLIFY_SECRET_KEY}
+      - COOLIFY_LETS_ENCRYPT_EMAIL=${LETS_ENCRYPT_EMAIL}
     networks:
       - hosthive-network
+    profiles:
+      - production
 
-  # PostgreSQL Database (Used by Coolify and Dashboard)
-  coolify-db:
+  # PostgreSQL Database
+  postgres:
     image: postgres:16-alpine
-    container_name: coolify-db
+    container_name: hosthive-postgres
     restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-coolify}
-      POSTGRES_USER: ${POSTGRES_USER:-coolify}
+      POSTGRES_DB: ${POSTGRES_DB:-hosthive}
+      POSTGRES_USER: ${POSTGRES_USER:-hosthive}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - hosthive-network
+    profiles:
+      - dev
 
-  # Redis for Caching & Sessions (Used by Coolify and Dashboard)
-  coolify-redis:
+  # Redis for Caching & Sessions
+  redis:
     image: redis:7-alpine
-    container_name: coolify-redis
+    container_name: hosthive-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis-data:/data
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     networks:
       - hosthive-network
+    command: redis-server --appendonly yes
+    profiles:
+      - dev
 
   # Traefik Reverse Proxy (For production routing)
   traefik:
@@ -131,8 +134,7 @@ volumes:
   postgres-data:
   redis-data:
   coolify-data:
-  coolify-ssh:
-  coolify-letsencrypt:
+  coolify-db:
   uptime-kuma-data:
 
 networks:

@@ -70,12 +70,12 @@ export default function RegisterPage() {
 
       if (result.needsEmailConfirmation) {
         router.replace(
-          `/login?registered=1&confirmed=1&email=${encodeURIComponent(email)}`
+          `/login?registered=1&email=${encodeURIComponent(email)}`
         )
         return
       }
 
-      router.replace(`/login?registered=1&confirmed=0&email=${encodeURIComponent(email)}`)
+      router.replace('/dashboard')
       router.refresh()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Registration failed'

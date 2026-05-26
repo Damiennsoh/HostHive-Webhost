@@ -42,29 +42,42 @@ const typeLabels = {
   redis: 'Redis',
 }
 
+import type { ProjectGroup } from '@/lib/types'
+
 export default function DatabasesPage() {
   const [databases, setDatabases] = useState<ManagedDatabaseRow[]>([])
   const [projects, setProjects] = useState<DbProject[]>([])
+  const [groups, setGroups] = useState<ProjectGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [coolifyConfigured, setCoolifyConfigured] = useState(false)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
   const [name, setName] = useState('')
   const [dbType, setDbType] = useState<'postgresql' | 'mysql' | 'redis'>('postgresql')
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('')
   const [linkProjectId, setLinkProjectId] = useState<Record<string, string>>({})
 
   const load = useCallback(() => {
     setLoading(true)
-    Promise.all([fetch('/api/databases'), fetch('/api/projects')])
-      .then(async ([dbRes, projRes]) => {
+    Promise.all([
+      fetch('/api/databases'),
+      fetch('/api/projects'),
+      fetch('/api/project-groups')
+    ])
+      .then(async ([dbRes, projRes, groupRes]) => {
         const dbJson = await dbRes.json()
         const projJson = await projRes.json()
+        const groupJson = await groupRes.json()
+        
         if (dbJson.success) {
           setDatabases(dbJson.databases ?? [])
           setCoolifyConfigured(Boolean(dbJson.coolifyConfigured))
         }
         if (projJson.success) {
           setProjects(projJson.projects ?? [])
+        }
+        if (groupJson.success) {
+          setGroups(groupJson.groups ?? [])
         }
       })
       .catch(console.error)
@@ -82,7 +95,11 @@ export default function DatabasesPage() {
       const res = await fetch('/api/databases', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, db_type: dbType }),
+        body: JSON.stringify({ 
+          name, 
+          db_type: dbType,
+          project_group_id: selectedGroupId || null
+        }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Failed to create database')
@@ -163,6 +180,19 @@ export default function DatabasesPage() {
                     <SelectItem value="postgresql">PostgreSQL</SelectItem>
                     <SelectItem value="mysql">MySQL</SelectItem>
                     <SelectItem value="redis">Redis</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Project Group (Container)</Label>
+                <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+                  <SelectTrigger className="border-border bg-muted">
+                    <SelectValue placeholder="Select a project..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {groups.map(group => (
+                      <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

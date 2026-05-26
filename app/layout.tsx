@@ -39,8 +39,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark bg-background" suppressHydrationWarning>
-      <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased`} suppressHydrationWarning>
+    <html lang="en" className="dark bg-background">
+      <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}>
         <AuthProvider>
           {children}
         </AuthProvider>
