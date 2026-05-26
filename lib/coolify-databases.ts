@@ -34,6 +34,8 @@ function coolifyEndpoint(dbType: DatabaseType): string {
       return '/databases/mysql';
     case 'redis':
       return '/databases/redis';
+    case 'mongodb':
+      return '/databases/mongodb';
   }
 }
 
@@ -72,6 +74,14 @@ function buildCreateBody(
       mysql_password: opts.password,
       mysql_database: opts.database,
       mysql_root_password: opts.password,
+    };
+  }
+  if (dbType === 'mongodb') {
+    return {
+      ...base,
+      mongodb_username: opts.username,
+      mongodb_password: opts.password,
+      mongodb_database: opts.database,
     };
   }
   return {

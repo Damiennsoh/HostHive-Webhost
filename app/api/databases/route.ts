@@ -10,7 +10,7 @@ import {
 import { createCoolifyDatabase, isCoolifyDatabaseConfigured } from '@/lib/coolify-databases';
 import { slugify } from '@/lib/project-utils';
 
-const DB_TYPES: DatabaseType[] = ['postgresql', 'mysql', 'redis'];
+const DB_TYPES: DatabaseType[] = ['postgresql', 'mysql', 'redis', 'mongodb'];
 
 export async function GET(request: NextRequest) {
   const auth = await requireAuth();

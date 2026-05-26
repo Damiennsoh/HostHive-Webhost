@@ -26,7 +26,7 @@ import type { DbProject } from '@/types/supabase'
 interface ManagedDatabaseRow {
   id: string
   name: string
-  db_type: 'postgresql' | 'mysql' | 'redis'
+  db_type: 'postgresql' | 'mysql' | 'redis' | 'mongodb'
   status: string
   host: string | null
   port: number | null
@@ -40,6 +40,7 @@ const typeLabels = {
   postgresql: 'PostgreSQL',
   mysql: 'MySQL',
   redis: 'Redis',
+  mongodb: 'MongoDB',
 }
 
 import type { ProjectGroup } from '@/lib/types'
@@ -53,7 +54,7 @@ export default function DatabasesPage() {
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
   const [name, setName] = useState('')
-  const [dbType, setDbType] = useState<'postgresql' | 'mysql' | 'redis'>('postgresql')
+  const [dbType, setDbType] = useState<'postgresql' | 'mysql' | 'redis' | 'mongodb'>('postgresql')
   const [selectedGroupId, setSelectedGroupId] = useState<string>('')
   const [linkProjectId, setLinkProjectId] = useState<Record<string, string>>({})
 
@@ -180,6 +181,7 @@ export default function DatabasesPage() {
                     <SelectItem value="postgresql">PostgreSQL</SelectItem>
                     <SelectItem value="mysql">MySQL</SelectItem>
                     <SelectItem value="redis">Redis</SelectItem>
+                    <SelectItem value="mongodb">MongoDB</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -301,8 +303,8 @@ export default function DatabasesPage() {
       )}
 
       <p className="text-xs text-muted-foreground">
-        Linking injects <code>DATABASE_URL</code>, <code>MYSQL_URL</code>, or{' '}
-        <code>REDIS_URL</code> into your project and syncs to Coolify when connected.{' '}
+        Linking injects <code>DATABASE_URL</code>, <code>MYSQL_URL</code>, <code>REDIS_URL</code>, or{' '}
+        <code>MONGODB_URL</code> into your project and syncs to Coolify when connected.{' '}
         <Link href="/docs" className="text-primary hover:underline">
           Read the docs
         </Link>

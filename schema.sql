@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS managed_databases (
   project_id UUID REFERENCES projects(id) ON DELETE SET NULL, -- Specifically linked service (deprecated in favor of group)
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT valid_db_type CHECK (db_type IN ('postgresql', 'mysql', 'redis'))
+  CONSTRAINT valid_db_type CHECK (db_type IN ('postgresql', 'mysql', 'redis', 'mongodb'))
 );
 
 -- Deployments Table
