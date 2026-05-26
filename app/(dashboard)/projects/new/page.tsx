@@ -1,4 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
+'use client'
+
+import { useState, useRef, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -42,7 +44,7 @@ interface EnvVar {
   isSecret: boolean
 }
 
-export default function NewProjectPage() {
+function NewProjectPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -739,5 +741,17 @@ export default function NewProjectPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function NewProjectPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+    }>
+      <NewProjectPageInner />
+    </Suspense>
   )
 }

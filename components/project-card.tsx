@@ -13,7 +13,7 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <Link href={`/projects/${project.id}`}>
+    <Link href={`/projects/${project.projectGroupId ?? '_'}/services/${project.id}`}>
       <motion.div
         whileHover={{ y: -2 }}
         className="group relative rounded-lg border border-border bg-card p-5 transition-all hover:border-zinc-700 hover:shadow-lg hover:shadow-black/20"
