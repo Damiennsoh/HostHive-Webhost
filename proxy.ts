@@ -19,17 +19,6 @@ const ratelimit = upstashRedis
     })
   : null;
 
-const PUBLIC_PREFIXES = [
-  '/pricing',
-  '/features',
-  '/about',
-  '/contact',
-  '/docs',
-  '/terms',
-  '/privacy',
-  '/forgot-password',
-];
-
 const PROTECTED_PREFIXES = [
   '/dashboard',
   '/projects',
@@ -42,15 +31,6 @@ const PROTECTED_PREFIXES = [
   '/organizations',
 ];
 
-function isPublicRoute(pathname: string): boolean {
-  if (pathname === '/') return true;
-  if (PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return true;
-  if (pathname.startsWith('/api/webhooks')) return true;
-  if (pathname.startsWith('/api/health')) return true;
-  if (pathname.startsWith('/auth/')) return true;
-  return false;
-}
-
 function isProtectedRoute(pathname: string): boolean {
   return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
@@ -60,15 +40,15 @@ function isAuthRoute(pathname: string): boolean {
 }
 
 /**
- * Next.js Proxy (formerly Middleware)
+ * Next.js Middleware
  * Handles Auth Protection, Rate Limiting, and Cookie Management
  */
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Rate limit all API routes if Upstash is configured
   if (pathname.startsWith('/api/') && ratelimit) {
-    const ip = request.ip ?? '127.0.0.1';
+    const ip = (request as any).ip ?? '127.0.0.1';
     const { success } = await ratelimit.limit(ip);
     if (!success) {
       return NextResponse.json(
@@ -129,13 +109,9 @@ export async function proxy(request: NextRequest) {
     const { data } = await supabase.auth.getUser();
     user = data.user;
   } catch (err: any) {
-    // If we have an AuthApiError related to refresh tokens, we treat the user as logged out
-    console.warn('[Proxy] Auth session error:', err.message);
-    
-    // Clear cookies if refresh token is invalid to stop the error loop
+    console.warn('[Middleware] Auth session error:', err.message);
     if (err.code === 'refresh_token_not_found' || err.status === 400) {
       const response = NextResponse.redirect(new URL('/login', request.url));
-      // You might want to manually clear specific supabase cookies here if needed
       return response;
     }
   }
@@ -156,9 +132,7 @@ export async function proxy(request: NextRequest) {
   return supabaseResponse;
 }
 
-// Map the default export if Next.js expects a default middleware function
-// In some experimental versions, it might look for 'proxy' specifically
-export default proxy;
+export default middleware;
 
 export const config = {
   matcher: [
