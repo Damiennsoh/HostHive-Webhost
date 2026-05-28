@@ -1,6 +1,6 @@
-# Coolify Integration Guide for HostHive
+# Coolify Integration Guide for LynxHost
 
-Complete guide for integrating Coolify with HostHive for deployment management.
+Complete guide for integrating Coolify with LynxHost for deployment management.
 
 ## What is Coolify?
 
@@ -13,12 +13,12 @@ Coolify is an open-source, self-hosted PaaS platform that handles:
 - Log aggregation
 - Health monitoring
 
-Think of it as the "deployment engine" that does the heavy lifting while HostHive provides the user interface.
+Think of it as the "deployment engine" that does the heavy lifting while LynxHost provides the user interface.
 
 ## Architecture
 
 ```
-HostHive Dashboard
+LynxHost Dashboard
       ↓
     REST API
       ↓
@@ -43,7 +43,7 @@ curl -fsSL https://get.coolify.io/install.sh | bash
 # Access Coolify dashboard at http://your_vps_ip:8000
 ```
 
-### Option 2: Docker Compose (Included in HostHive)
+### Option 2: Docker Compose (Included in LynxHost)
 
 Coolify is already configured in docker-compose.yml:
 
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
 }
 
 async function handleDeploymentStarted(data: any) {
-  // Update deployment status in HostHive DB
+  // Update deployment status in LynxHost DB
   const { projectId, deploymentId } = data;
   
   // TODO: Update deployment record
@@ -502,7 +502,7 @@ npm run seed:db
 // Access encrypted secrets in deployment
 const dbPassword = process.env.DATABASE_PASSWORD;
 
-// In HostHive, inject via environment
+// In LynxHost, inject via environment
 const secretValue = await decryptSecret(secretName);
 await coolifyAPI.patch(`/api/v1/projects/${id}/services/${id}`, {
   environment: {
@@ -519,7 +519,7 @@ await coolifyAPI.patch(`/api/v1/projects/${id}/services/${id}`, {
 
 ## Next Steps
 
-1. Deploy HostHive dashboard
+1. Deploy LynxHost dashboard
 2. Configure Coolify API integration
 3. Connect GitHub App
 4. Test first deployment

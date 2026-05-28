@@ -30,7 +30,7 @@ const features = [
     icon: GitBranch,
     title: "GitHub auto-deploy",
     description:
-      "Connect a repository and HostHive rebuilds your app automatically whenever you push code. Works with Node, Python, Go, and more.",
+      "Connect a repository and LynxHost rebuilds your app automatically whenever you push code. Works with Node, Python, Go, and more.",
     color: "text-primary",
   },
   {

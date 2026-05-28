@@ -1,6 +1,6 @@
-# HostHive Quick Start Checklist
+# LynxHost Quick Start Checklist
 
-Get HostHive running in minutes with this comprehensive checklist.
+Get LynxHost running in minutes with this comprehensive checklist.
 
 ## Pre-Flight Checks
 
@@ -14,8 +14,8 @@ Get HostHive running in minutes with this comprehensive checklist.
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/Damiennsoh/HostHive-Webhost.git
-cd HostHive-Webhost
+git clone https://github.com/Damiennsoh/LynxHost-Webhost.git
+cd LynxHost-Webhost
 ```
 
 ### 2. Install Dependencies
@@ -81,7 +81,7 @@ INSERT INTO users (email, name) VALUES
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| Dashboard | http://localhost:3000 | HostHive web UI |
+| Dashboard | http://localhost:3000 | LynxHost web UI |
 | Traefik | http://localhost:8080 | Reverse proxy dashboard |
 | PostgreSQL | localhost:5432 | Database |
 | Redis | localhost:6379 | Cache |
@@ -193,11 +193,11 @@ curl -L "https://github.com/docker/compose/releases/latest/download/docker-compo
 chmod +x /usr/local/bin/docker-compose
 ```
 
-#### 3. Deploy HostHive
+#### 3. Deploy LynxHost
 
 ```bash
 # Clone repository
-git clone https://github.com/Damiennsoh/HostHive-Webhost.git /app/hosthive
+git clone https://github.com/Damiennsoh/LynxHost-Webhost.git /app/hosthive
 cd /app/hosthive
 
 # Configure environment

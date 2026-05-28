@@ -97,7 +97,7 @@ const sections = [
         title: "How webhooks work",
         id: "webhooks",
         summary:
-          "GitHub notifies HostHive on each push. We verify the signature, queue a build, and deploy via Coolify.",
+          "GitHub notifies LynxHost on each push. We verify the signature, queue a build, and deploy via Coolify.",
       },
       {
         title: "Branches & preview deploys",
@@ -128,7 +128,7 @@ const sections = [
         title: "DNS records (CNAME, A, TXT)",
         id: "dns",
         summary:
-          "Copy the CNAME or A record HostHive shows into your registrar (Namecheap, GoDaddy, etc.). TXT verifies ownership.",
+          "Copy the CNAME or A record LynxHost shows into your registrar (Namecheap, GoDaddy, etc.). TXT verifies ownership.",
       },
       {
         title: "Verify domain ownership",
@@ -144,7 +144,7 @@ const sections = [
   },
   {
     id: "platform",
-    title: "How HostHive works",
+    title: "How LynxHost works",
     description: "Under the hood — simplified",
     icon: Globe,
     links: [
@@ -213,7 +213,7 @@ const popularGuides = [
     href: "/projects/new",
     content: [
       "Create a folder with index.html plus your CSS and JS files.",
-      "In HostHive, go to Projects → New Project → Local files.",
+      "In LynxHost, go to Projects → New Project → Local files.",
       "Click Choose folder and select your site directory.",
       "Name the project and click through to Deploy.",
       "Your site will be live at something like my-site.hosthive.app within a minute.",
@@ -222,13 +222,13 @@ const popularGuides = [
   {
     id: "guide-domain",
     title: "Connect a custom domain",
-    description: "Copy DNS records from HostHive into your domain registrar.",
+    description: "Copy DNS records from LynxHost into your domain registrar.",
     readTime: "5 min read",
     href: "/domains",
     content: [
       "Open Domains in the dashboard and click Add Domain.",
       "Enter your domain and link it to a project.",
-      "HostHive shows CNAME, A, and TXT records — copy each into your DNS panel.",
+      "LynxHost shows CNAME, A, and TXT records — copy each into your DNS panel.",
       "Wait for propagation, then click Verify.",
       "HTTPS turns on automatically once verification succeeds.",
     ],
@@ -252,7 +252,7 @@ const popularGuides = [
     description: "From upload to container to public URL — the full journey.",
     readTime: "6 min read",
     content: [
-      "HostHive creates a project record and assigns a subdomain.",
+      "LynxHost creates a project record and assigns a subdomain.",
       "Your files or Git repo are sent to Coolify on our server.",
       "Coolify builds a Docker image (or serves static files directly).",
       "Traefik registers the route and provisions SSL.",

@@ -16,7 +16,7 @@ export function getDnsRecordsForDomain(domain: string, projectSlug: string): Dns
       type: 'CNAME',
       name: domain.startsWith('www.') ? 'www' : domain,
       value: cnameTarget,
-      purpose: 'Routes traffic to your HostHive deployment',
+      purpose: 'Routes traffic to your LynxHost deployment',
     },
   ];
 

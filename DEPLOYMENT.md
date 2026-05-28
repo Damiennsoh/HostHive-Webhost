@@ -1,6 +1,6 @@
-# HostHive Deployment Guide
+# LynxHost Deployment Guide
 
-A comprehensive guide for deploying and running HostHive - a professional web hosting platform similar to Vercel and Render.
+A comprehensive guide for deploying and running LynxHost - a professional web hosting platform similar to Vercel and Render.
 
 ## Table of Contents
 
@@ -16,18 +16,18 @@ A comprehensive guide for deploying and running HostHive - a professional web ho
 
 ## Architecture Overview
 
-HostHive uses a microservices architecture with the following components:
+LynxHost uses a microservices architecture with the following components:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                   HostHive Dashboard                         │
+│                   LynxHost Dashboard                         │
 │          (Next.js Frontend + React Components)               │
 └──────────────────┬──────────────────────────────────────────┘
                    │
         ┌──────────┴──────────┐
         │                     │
    ┌────▼────┐          ┌─────▼─────┐
-   │ Traefik │          │ HostHive  │
+   │ Traefik │          │ LynxHost  │
    │ (Router)│          │   API     │
    └────┬────┘          │ (Express) │
         │               └─────┬─────┘
@@ -68,8 +68,8 @@ HostHive uses a microservices architecture with the following components:
 ### 1. Clone and Install Dependencies
 
 ```bash
-git clone https://github.com/Damiennsoh/HostHive-Webhost.git
-cd HostHive-Webhost
+git clone https://github.com/Damiennsoh/LynxHost-Webhost.git
+cd LynxHost-Webhost
 pnpm install
 ```
 
@@ -181,7 +181,7 @@ chmod +x /usr/local/bin/docker-compose
 #### Step 2: Clone Repository
 
 ```bash
-git clone https://github.com/Damiennsoh/HostHive-Webhost.git /app/hosthive
+git clone https://github.com/Damiennsoh/LynxHost-Webhost.git /app/hosthive
 cd /app/hosthive
 ```
 
@@ -223,7 +223,7 @@ CNAME: *.hosthive.app -> hosthive.app
 
 # Create a new deployment:
 # 1. Connect your GitHub repository
-# 2. Select HostHive project
+# 2. Select LynxHost project
 # 3. Configure build and deploy settings
 # 4. Click Deploy
 ```

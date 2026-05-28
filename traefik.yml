@@ -1,4 +1,4 @@
-# Traefik Configuration for HostHive
+# Traefik Configuration for LynxHost
 # Dynamic reverse proxy with automatic SSL/TLS and Docker integration
 
 global:

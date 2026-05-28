@@ -1,8 +1,8 @@
-# HostHive - Professional Web Hosting Platform
+# LynxHost - Professional Web Hosting Platform
 
 A modern, scalable web hosting platform similar to Vercel and Render. Deploy frontends, backends, and Docker containers with ease. Built with Next.js, React, Coolify, and Traefik.
 
-![HostHive Dashboard](https://img.shields.io/badge/status-MVP%20In%20Progress-orange)
+![LynxHost Dashboard](https://img.shields.io/badge/status-MVP%20In%20Progress-orange)
 ![Next.js](https://img.shields.io/badge/Next.js-16+-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19+-61dafb?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)
@@ -66,8 +66,8 @@ A modern, scalable web hosting platform similar to Vercel and Render. Deploy fro
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Damiennsoh/HostHive-Webhost.git
-cd HostHive-Webhost
+git clone https://github.com/Damiennsoh/LynxHost-Webhost.git
+cd LynxHost-Webhost
 ```
 
 ### 2. Install Dependencies
@@ -108,7 +108,7 @@ For managed databases (PostgreSQL/MySQL/Redis), set `COOLIFY_SERVER_UUID` from C
 
 ### 4. Why Docker? (What each service does)
 
-HostHive uses Docker so you **never run a custom build system or per-user VPS**. One machine runs isolated containers for every customer project.
+LynxHost uses Docker so you **never run a custom build system or per-user VPS**. One machine runs isolated containers for every customer project.
 
 | Service | Role |
 |---------|------|
@@ -118,7 +118,7 @@ HostHive uses Docker so you **never run a custom build system or per-user VPS**.
 | **PostgreSQL / Redis** | Optional local stack; production uses **Supabase** for auth + data |
 | **Cloudflare Tunnel** (`--profile demo`) | Public HTTPS URL for employer demos without buying a domain |
 
-**Container isolation:** Coolify runs each project in its **own Docker container** with separate networks and resource limits (`--cpus`, `--memory`). User apps cannot access each other or the host filesystem. HostHive stores secrets in Supabase; Coolify only receives them at deploy time.
+**Container isolation:** Coolify runs each project in its **own Docker container** with separate networks and resource limits (`--cpus`, `--memory`). User apps cannot access each other or the host filesystem. LynxHost stores secrets in Supabase; Coolify only receives them at deploy time.
 
 ```bash
 # Start Coolify + Traefik (production profile)
@@ -138,7 +138,7 @@ Visit http://localhost:3000 — register, create a project at `/projects/new`, a
 
 ### 6. Custom domains (Vercel-style DNS)
 
-When you add a domain, HostHive shows **Type / Name / Value** records:
+When you add a domain, LynxHost shows **Type / Name / Value** records:
 
 | Type | Name | Value | Purpose |
 |------|------|-------|---------|
@@ -343,8 +343,8 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for comprehensive deployment instructions.
 
 ```bash
 # 1. Clone repo on your server
-git clone https://github.com/Damiennsoh/HostHive-Webhost.git
-cd HostHive-Webhost
+git clone https://github.com/Damiennsoh/LynxHost-Webhost.git
+cd LynxHost-Webhost
 
 # 2. Configure environment
 cp .env.example .env.production
@@ -358,11 +358,11 @@ docker-compose --profile production up -d
 
 ### Using Coolify
 
-HostHive integrates seamlessly with Coolify:
+LynxHost integrates seamlessly with Coolify:
 
 1. Deploy Coolify on your server
 2. Connect your GitHub account
-3. Create a new deployment from the HostHive repo
+3. Create a new deployment from the LynxHost repo
 4. Coolify handles builds, scaling, and monitoring
 
 ## Monitoring
@@ -460,8 +460,8 @@ MIT License - See [LICENSE](./LICENSE) for details
 ## Support
 
 - 📖 **Documentation**: [docs.hosthive.app](https://docs.hosthive.app)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/Damiennsoh/HostHive-Webhost/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/Damiennsoh/HostHive-Webhost/discussions)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/Damiennsoh/LynxHost-Webhost/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/Damiennsoh/LynxHost-Webhost/discussions)
 - 📧 **Email**: support@hosthive.app
 - 💬 **Discord**: [Join Community](https://discord.gg/hosthive)
 
@@ -475,7 +475,7 @@ MIT License - See [LICENSE](./LICENSE) for details
 
 ## Sponsor
 
-If you find HostHive useful, please consider:
+If you find LynxHost useful, please consider:
 - ⭐ Starring the repository
 - 🐛 Reporting bugs
 - 💡 Suggesting features
@@ -483,6 +483,6 @@ If you find HostHive useful, please consider:
 
 ---
 
-**Built with ❤️ by the HostHive Community**
+**Built with ❤️ by the LynxHost Community**
 
 Made with Next.js, React, and TypeScript.

@@ -1,6 +1,6 @@
-# HostHive API Reference
+# LynxHost API Reference
 
-Complete API documentation for HostHive backend integration.
+Complete API documentation for LynxHost backend integration.
 
 ## Base URL
 
@@ -525,9 +525,9 @@ X-RateLimit-Reset: 1621857600
 ### JavaScript/TypeScript
 
 ```typescript
-import { HostHiveAPI } from 'hosthive-sdk';
+import { LynxHostAPI } from 'hosthive-sdk';
 
-const client = new HostHiveAPI({
+const client = new LynxHostAPI({
   token: 'your_jwt_token'
 });
 
@@ -552,9 +552,9 @@ const deployment = await client.deployments.create('proj_001', {
 ### Python
 
 ```python
-from hosthive import HostHiveAPI
+from hosthive import LynxHostAPI
 
-client = HostHiveAPI(token='your_jwt_token')
+client = LynxHostAPI(token='your_jwt_token')
 
 # List projects
 projects = client.projects.list()
@@ -576,6 +576,6 @@ logs = client.deployments.get_logs('deploy_001')
 ## Support
 
 For API support, issues, or feature requests:
-- GitHub Issues: https://github.com/Damiennsoh/HostHive-Webhost/issues
+- GitHub Issues: https://github.com/Damiennsoh/LynxHost-Webhost/issues
 - Email: support@hosthive.app
 - Discord: [Join our community](https://discord.gg/hosthive)

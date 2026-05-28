@@ -20,7 +20,7 @@ The app crashes on Vercel if Supabase keys are missing. `.env.local` is **not** 
 
 ## Steps
 
-1. [Vercel Dashboard](https://vercel.com) → your **HostHive-Webhost** project  
+1. [Vercel Dashboard](https://vercel.com) → your **LynxHost-Webhost** project  
 2. **Settings** → **Environment Variables**  
 3. Add each variable above for **Production**, **Preview**, and **Development**  
 4. **Deployments** → ⋮ on latest deployment → **Redeploy** (required after adding env vars)

@@ -54,7 +54,7 @@ function buildCreateBody(
     destination_uuid: env.COOLIFY_DESTINATION_UUID,
     project_uuid: env.COOLIFY_PROJECT_UUID,
     name: opts.name,
-    description: `HostHive managed ${dbType}`,
+    description: `LynxHost managed ${dbType}`,
     instant_deploy: true,
     is_public: false,
   };

@@ -1,6 +1,6 @@
-# HostHive Authentication Guide
+# LynxHost Authentication Guide
 
-Complete authentication implementation for HostHive with support for email/password, GitHub OAuth, and session management.
+Complete authentication implementation for LynxHost with support for email/password, GitHub OAuth, and session management.
 
 ## Authentication Flow
 
@@ -213,7 +213,7 @@ export default function ProtectedPage() {
 
 1. Go to GitHub Settings → Developer settings → OAuth Apps
 2. Create new OAuth App:
-   - **Application name**: HostHive
+   - **Application name**: LynxHost
    - **Homepage URL**: https://your-domain.com
    - **Authorization callback URL**: https://your-domain.com/api/auth/github/callback
 3. Copy **Client ID** and **Client Secret**
@@ -457,7 +457,7 @@ import speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
 
 const secret = speakeasy.generateSecret({
-  name: `HostHive (${user.email})`,
+  name: `LynxHost (${user.email})`,
   length: 32,
 });
 

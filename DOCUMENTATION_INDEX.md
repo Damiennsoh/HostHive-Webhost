@@ -1,6 +1,6 @@
-# HostHive Documentation Index
+# LynxHost Documentation Index
 
-Complete guide to all documentation and resources for the HostHive web hosting platform.
+Complete guide to all documentation and resources for the LynxHost web hosting platform.
 
 ## Getting Started
 
