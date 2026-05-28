@@ -1,19 +1,10 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/lib/auth-context'
 import { APP_NAME, APP_TAGLINE } from '@/lib/brand'
 import './globals.css'
 
-const inter = Inter({ 
-  subsets: ['latin'],
-  variable: '--font-inter',
-})
-
-const geistMono = Geist_Mono({ 
-  subsets: ['latin'],
-  variable: '--font-geist-mono',
-})
+// Removed Google Fonts to avoid build failures in restricted network environments.
 
 export const metadata: Metadata = {
   title: `${APP_NAME} - Professional Web Hosting`,
@@ -40,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark bg-background" suppressHydrationWarning>
-      <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased`} suppressHydrationWarning>
+      <body className="font-sans antialiased">
         <AuthProvider>
           {children}
         </AuthProvider>

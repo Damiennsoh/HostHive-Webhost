@@ -16,7 +16,6 @@ export interface Database {
         Row: {
           id: string;
           email: string;
-          username: string;
           full_name: string | null;
           avatar_url: string | null;
           github_login: string | null;
@@ -28,7 +27,6 @@ export interface Database {
         Insert: {
           id: string;
           email: string;
-          username: string;
           full_name?: string | null;
           avatar_url?: string | null;
           github_login?: string | null;
@@ -39,7 +37,6 @@ export interface Database {
         };
         Update: {
           email?: string;
-          username?: string;
           full_name?: string | null;
           avatar_url?: string | null;
           github_login?: string | null;
@@ -48,10 +45,37 @@ export interface Database {
           updated_at?: string;
         };
       };
+      project_groups: {
+        Row: {
+          id: string;
+          user_id: string;
+          organization_id: string | null;
+          name: string;
+          description: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          organization_id?: string | null;
+          name: string;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          organization_id?: string | null;
+          name?: string;
+          description?: string | null;
+          updated_at?: string;
+        };
+      };
       projects: {
         Row: {
           id: string;
           user_id: string;
+          project_group_id: string | null;
           name: string;
           slug: string;
           coolify_uuid: string | null;
@@ -73,6 +97,7 @@ export interface Database {
         Insert: {
           id?: string;
           user_id: string;
+          project_group_id?: string | null;
           name: string;
           slug: string;
           coolify_uuid?: string | null;
@@ -252,6 +277,7 @@ export interface Database {
           id: string;
           user_id: string;
           project_id: string | null;
+          project_group_id: string | null;
           name: string;
           db_type: 'postgresql' | 'mysql' | 'redis';
           coolify_uuid: string | null;
@@ -270,6 +296,7 @@ export interface Database {
           id?: string;
           user_id: string;
           project_id?: string | null;
+          project_group_id?: string | null;
           name: string;
           db_type: 'postgresql' | 'mysql' | 'redis';
           coolify_uuid?: string | null;

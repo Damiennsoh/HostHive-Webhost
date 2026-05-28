@@ -30,9 +30,7 @@ function LoginForm() {
 
     if (registered === '1') {
       setSuccess(
-        confirmed === '0' 
-          ? 'Account created. You can sign in below.' 
-          : 'Account created. Check your email for a confirmation link, then sign in below.'
+        'Account created. Check your email for a confirmation link, then sign in below.'
       )
     } else if (confirmed === '1') {
       setSuccess('Email confirmed. You can sign in now.')
@@ -57,16 +55,8 @@ function LoginForm() {
 
     try {
       await login(email, password)
-      
-      // Additional check to make sure login really worked and we aren't showing a false error state
-      const searchParamsObj = new URLSearchParams(window.location.search);
-      if (searchParamsObj.get('error')) {
-        searchParamsObj.delete('error');
-        router.replace(`/login?${searchParamsObj.toString()}`);
-      } else {
-        router.replace('/dashboard')
-        router.refresh()
-      }
+      router.replace('/dashboard')
+      router.refresh()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Invalid email or password'
       setError(message)

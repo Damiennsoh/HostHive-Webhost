@@ -6,32 +6,32 @@ import { motion } from 'framer-motion'
 import { Plus, Search, Grid, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ProjectCard } from '@/components/project-card'
-import { mapDbProjectToUi } from '@/lib/map-db'
-import type { Project } from '@/lib/types'
+import { ProjectGroupCard } from '@/components/project-group-card'
+import { mapDbProjectGroupToUi } from '@/lib/map-db'
+import type { ProjectGroup } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([])
+  const [groups, setGroups] = useState<ProjectGroup[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/projects')
+    fetch('/api/project-groups')
       .then((r) => r.json())
       .then((json) => {
         if (json.success) {
-          setProjects(json.projects.map(mapDbProjectToUi))
+          setGroups(json.groups)
         }
       })
       .finally(() => setLoading(false))
   }, [])
 
-  const filteredProjects = projects.filter(
-    (project) =>
-      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.domain.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredGroups = groups.filter(
+    (group) =>
+      group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (group.description && group.description.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
   return (
@@ -61,15 +61,17 @@ export default function ProjectsPage() {
       </div>
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Loading projects…</p>
-      ) : filteredProjects.length > 0 ? (
+        <div className="flex h-32 items-center justify-center">
+          <p className="text-sm text-muted-foreground">Loading projects…</p>
+        </div>
+      ) : filteredGroups.length > 0 ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className={cn('grid gap-4', viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}
         >
-          {filteredProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+          {filteredGroups.map((group) => (
+            <ProjectGroupCard key={group.id} group={group} />
           ))}
         </motion.div>
       ) : (

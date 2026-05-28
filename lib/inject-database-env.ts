@@ -12,7 +12,7 @@ type ManagedDb = {
 };
 
 export async function injectDatabaseEnvForProject(
-  supabase: SupabaseClient<Database>,
+  supabase: any,
   userId: string,
   projectId: string,
   database: ManagedDb

@@ -4,7 +4,7 @@ import { getCoolifyClient } from '@/lib/coolify-client';
 import { slugify, mapProjectTypeToRuntime } from '@/lib/project-utils';
 import { createDemoDbProject, getDemoDbProjects } from '@/lib/demo-api';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
 
@@ -12,16 +12,24 @@ export async function GET() {
     return NextResponse.json({ success: true, projects: getDemoDbProjects() }, { status: 200 });
   }
 
-  const { user, supabase } = auth;
+  const { user, supabase } = auth as { user: any; supabase: any };
   if (!supabase) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { data, error } = await supabase
+  const { searchParams } = new URL(request.url);
+  const groupId = searchParams.get('groupId') || searchParams.get('group_id');
+
+  let query = supabase
     .from('projects')
     .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+    .eq('user_id', user.id);
+
+  if (groupId) {
+    query = query.eq('project_group_id', groupId);
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -44,6 +52,7 @@ export async function POST(request: NextRequest) {
       build_command,
       start_command,
       source,
+      project_group_id,
     } = body;
 
     if (!name) {
@@ -72,7 +81,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, project }, { status: 201 });
     }
 
-    const { user, supabase } = auth;
+    const { user, supabase } = auth as { user: any; supabase: any };
     if (!supabase) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -102,6 +111,7 @@ export async function POST(request: NextRequest) {
       .from('projects')
       .insert({
         user_id: user.id,
+        project_group_id: project_group_id ?? null,
         name,
         slug,
         coolify_uuid: coolifyUuid,

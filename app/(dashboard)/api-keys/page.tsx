@@ -6,10 +6,10 @@ import { Plus, Copy, Eye, EyeOff, Trash2, Key, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { mockAPIKeys } from '@/lib/mock-data'
+
 
 export default function APIKeysPage() {
-  const [apiKeys, setApiKeys] = useState(mockAPIKeys)
+  const [apiKeys, setApiKeys] = useState<{ id: string; name: string; key: string; createdAt: string; lastUsed?: string }[]>([])
   const [showNewKeyForm, setShowNewKeyForm] = useState(false)
   const [newKeyName, setNewKeyName] = useState('')
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set())

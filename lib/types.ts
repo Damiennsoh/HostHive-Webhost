@@ -15,6 +15,16 @@ export interface Organization {
   plan: 'free' | 'pro' | 'enterprise' | 'startup'
 }
 
+export interface ProjectGroup {
+  id: string
+  userId: string
+  organizationId?: string
+  name: string
+  description?: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Project {
   id: string
   name: string
@@ -24,10 +34,31 @@ export interface Project {
   status: DeploymentStatus
   lastDeployment: string
   organizationId: string
+  projectGroupId?: string
   createdAt: string
+  updatedAt: string
   description?: string
   repository?: string
   branch?: string
+}
+
+export interface ManagedDatabase {
+  id: string
+  userId: string
+  projectGroupId?: string
+  name: string
+  dbType: 'postgresql' | 'mysql' | 'redis'
+  status: string
+  coolifyUuid?: string
+  host?: string
+  port?: number
+  databaseName?: string
+  username?: string
+  internalNetwork?: string
+  connectionUrl?: string
+  envVarKey?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Deployment {

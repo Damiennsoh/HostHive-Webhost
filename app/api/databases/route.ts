@@ -10,23 +10,28 @@ import {
 import { createCoolifyDatabase, isCoolifyDatabaseConfigured } from '@/lib/coolify-databases';
 import { slugify } from '@/lib/project-utils';
 
-const DB_TYPES: DatabaseType[] = ['postgresql', 'mysql', 'redis'];
+const DB_TYPES: DatabaseType[] = ['postgresql', 'mysql', 'redis', 'mongodb'];
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const auth = await requireAuth();
   if (isAuthError(auth)) return auth;
-  if (auth.isDemo) {
-    return NextResponse.json({ success: true, databases: [] });
-  }
 
-  const { user, supabase } = auth;
+  const { user, supabase } = auth as { user: any; supabase: any };
   if (!supabase) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data, error } = await supabase
+  const { searchParams } = new URL(request.url);
+  const groupId = searchParams.get('groupId') || searchParams.get('group_id');
+
+  let query = supabase
     .from('managed_databases')
     .select('*, projects(name, slug)')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+    .eq('user_id', user.id);
+
+  if (groupId) {
+    query = query.eq('project_group_id', groupId);
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -49,14 +54,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { user, supabase } = auth;
+  const { user, supabase } = auth as { user: any; supabase: any };
   if (!supabase) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await request.json();
-  const { name, db_type, project_id } = body as {
+  const { name, db_type, project_id, project_group_id } = body as {
     name: string;
     db_type: DatabaseType;
     project_id?: string;
+    project_group_id?: string;
   };
 
   if (!name?.trim()) {
@@ -130,6 +136,7 @@ export async function POST(request: NextRequest) {
     .insert({
       user_id: user.id,
       project_id: project_id ?? null,
+      project_group_id: project_group_id ?? null,
       name: name.trim(),
       db_type,
       coolify_uuid: coolifyUuid,
@@ -151,7 +158,7 @@ export async function POST(request: NextRequest) {
 
   if (project_id && row) {
     const { injectDatabaseEnvForProject } = await import('@/lib/inject-database-env');
-    await injectDatabaseEnvForProject(supabase, user.id, project_id, row);
+    await injectDatabaseEnvForProject(supabase as any, user.id, project_id, row);
   }
 
   return NextResponse.json(

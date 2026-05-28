@@ -1,28 +1,39 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Filter, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DeploymentRow } from '@/components/deployment-row'
-import { mockDeployments } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 import { Deployment } from '@/lib/types'
+import { useAuth } from '@/lib/auth-context'
 
 export default function DeploymentsPage() {
+  const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedDeployment, setExpandedDeployment] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
+  const [deployments, setDeployments] = useState<Deployment[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const filteredDeployments = mockDeployments.filter((deployment) => {
-    const matchesSearch = 
+  useEffect(() => {
+    if (!user) return
+    // Fetch real deployments from the API
+    fetch('/api/deployments')
+      .then((r) => r.ok ? r.json() : { deployments: [] })
+      .then((data) => setDeployments(data.deployments ?? []))
+      .catch(() => setDeployments([]))
+      .finally(() => setIsLoading(false))
+  }, [user])
+
+  const filteredDeployments = deployments.filter((deployment) => {
+    const matchesSearch =
       deployment.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       deployment.commit.toLowerCase().includes(searchQuery.toLowerCase()) ||
       deployment.commitMessage.toLowerCase().includes(searchQuery.toLowerCase())
-    
     const matchesStatus = !statusFilter || deployment.status === statusFilter
-    
     return matchesSearch && matchesStatus
   })
 

@@ -26,12 +26,18 @@ services:
     container_name: coolify
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8000:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - coolify-data:/app/storage
       - coolify-db:/app/database
     environment:
+      - APP_KEY=base64:NVAseQVccBPkw/WifQPk1hDOGR6/AZiAAmrD+0oHqVc=
+      - DB_HOST=coolify-db
+      - DB_PORT=5432
+      - DB_DATABASE=coolify
+      - DB_USERNAME=coolify
+      - DB_PASSWORD=secure_password
       - COOLIFY_SECRET_KEY=${COOLIFY_SECRET_KEY}
       - COOLIFY_LETS_ENCRYPT_EMAIL=${LETS_ENCRYPT_EMAIL}
     networks:
