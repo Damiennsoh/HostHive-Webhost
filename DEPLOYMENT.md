@@ -1,6 +1,6 @@
-# HostHive Deployment Guide
+# Lynx Host Deployment Guide
 
-A comprehensive guide for deploying and running HostHive - a professional web hosting platform similar to Vercel and Render.
+A comprehensive guide for deploying and running Lynx Host - a professional web hosting platform similar to Vercel and Render.
 
 ## Table of Contents
 
@@ -16,18 +16,18 @@ A comprehensive guide for deploying and running HostHive - a professional web ho
 
 ## Architecture Overview
 
-HostHive uses a microservices architecture with the following components:
+Lynx Host uses a microservices architecture with the following components:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                   HostHive Dashboard                         │
+│                   Lynx Host Dashboard                         │
 │          (Next.js Frontend + React Components)               │
 └──────────────────┬──────────────────────────────────────────┘
                    │
         ┌──────────┴──────────┐
         │                     │
    ┌────▼────┐          ┌─────▼─────┐
-   │ Traefik │          │ HostHive  │
+   │ Traefik │          │ Lynx Host  │
    │ (Router)│          │   API     │
    └────┬────┘          │ (Express) │
         │               └─────┬─────┘
@@ -86,7 +86,7 @@ Update `.env.local` with your local values:
 ```bash
 NODE_ENV=development
 NEXT_PUBLIC_API_URL=http://localhost:3000
-DATABASE_URL=postgresql://hosthive:secure_password@localhost:5432/hosthive
+DATABASE_URL=postgresql://lynxhost:secure_password@localhost:5432/lynxhost
 REDIS_URL=redis://localhost:6379
 ```
 
@@ -132,7 +132,7 @@ docker-compose --profile production up -d
 
 # Environment variables for production
 export COOLIFY_SECRET_KEY=your_secret
-export LETS_ENCRYPT_EMAIL=your_email@hosthive.app
+export LETS_ENCRYPT_EMAIL=your_email@lynxhost.app
 docker-compose --profile production up -d
 ```
 
@@ -147,13 +147,13 @@ docker-compose --profile dev up -d
 
 ```bash
 # Build the Next.js application image
-docker build -t hosthive:latest .
+docker build -t lynxhost:latest .
 
 # Run the image
 docker run -p 3000:3000 \
   -e DATABASE_URL=postgresql://... \
   -e REDIS_URL=redis://... \
-  hosthive:latest
+  lynxhost:latest
 ```
 
 ## Production Deployment
@@ -181,8 +181,8 @@ chmod +x /usr/local/bin/docker-compose
 #### Step 2: Clone Repository
 
 ```bash
-git clone https://github.com/Damiennsoh/HostHive-Webhost.git /app/hosthive
-cd /app/hosthive
+git clone https://github.com/Damiennsoh/HostHive-Webhost.git /app/lynxhost
+cd /app/lynxhost
 ```
 
 #### Step 3: Configure Environment
@@ -211,8 +211,8 @@ docker-compose ps
 Update your DNS records to point to your server:
 
 ```
-A record: hosthive.app -> your_server_ip
-CNAME: *.hosthive.app -> hosthive.app
+A record: lynxhost.app -> your_server_ip
+CNAME: *.lynxhost.app -> lynxhost.app
 ```
 
 ### Using Coolify for Deployment
@@ -223,7 +223,7 @@ CNAME: *.hosthive.app -> hosthive.app
 
 # Create a new deployment:
 # 1. Connect your GitHub repository
-# 2. Select HostHive project
+# 2. Select Lynx Host project
 # 3. Configure build and deploy settings
 # 4. Click Deploy
 ```
@@ -394,7 +394,7 @@ CREATE INDEX idx_domains_project_id ON domains(project_id);
 
 ```bash
 # Connect with psql
-psql postgresql://hosthive:secure_password@localhost:5432/hosthive
+psql postgresql://lynxhost:secure_password@localhost:5432/lynxhost
 
 # Run migrations
 npm run migrate
@@ -456,7 +456,7 @@ kill -9 <PID>
 
 ```bash
 # Test database connection
-docker-compose exec postgres psql -U hosthive -d hosthive -c "SELECT 1"
+docker-compose exec postgres psql -U lynxhost -d lynxhost -c "SELECT 1"
 
 # Check database logs
 docker-compose logs postgres
@@ -496,10 +496,11 @@ docker-compose exec traefik traefik version
 ## Support & Documentation
 
 - **GitHub Issues**: Report bugs and request features
-- **Documentation**: See [docs.hosthive.app](https://docs.hosthive.app)
+- **Documentation**: See [docs.lynxhost.app](https://docs.lynxhost.app)
 - **API Reference**: See [/api/docs](#)
 - **Community**: Join our Discord for support
 
 ## License
 
 MIT License - See LICENSE file for details
+

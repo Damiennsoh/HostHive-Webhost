@@ -1,6 +1,6 @@
-# HostHive Authentication Guide
+# Lynx Host Authentication Guide
 
-Complete authentication implementation for HostHive with support for email/password, GitHub OAuth, and session management.
+Complete authentication implementation for Lynx Host with support for email/password, GitHub OAuth, and session management.
 
 ## Authentication Flow
 
@@ -95,12 +95,12 @@ const isValid = await bcrypt.compare(password, storedHash);
 
 ```typescript
 {
-  iss: 'hosthive',
+  iss: 'lynxhost',
   sub: 'user_id',
   email: 'user@example.com',
   iat: 1621857600,
   exp: 1621944000,
-  aud: 'hosthive-app'
+  aud: 'lynxhost-app'
 }
 ```
 
@@ -213,7 +213,7 @@ export default function ProtectedPage() {
 
 1. Go to GitHub Settings → Developer settings → OAuth Apps
 2. Create new OAuth App:
-   - **Application name**: HostHive
+   - **Application name**: Lynx Host
    - **Homepage URL**: https://your-domain.com
    - **Authorization callback URL**: https://your-domain.com/api/auth/github/callback
 3. Copy **Client ID** and **Client Secret**
@@ -457,7 +457,7 @@ import speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
 
 const secret = speakeasy.generateSecret({
-  name: `HostHive (${user.email})`,
+  name: `Lynx Host (${user.email})`,
   length: 32,
 });
 
@@ -507,14 +507,14 @@ function verify2FA(secret: string, token: string): boolean {
 
 ```bash
 # Development
-Email: dev@hosthive.app
+Email: dev@lynxhost.app
 Password: password123
 
 # Test accounts
 Email: test@example.com
 Password: test123456
 
-Email: user@hosthive.app
+Email: user@lynxhost.app
 Password: user123456
 ```
 
@@ -524,7 +524,7 @@ Password: user123456
 # 1. Login
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"dev@hosthive.app","password":"password123"}'
+  -d '{"email":"dev@lynxhost.app","password":"password123"}'
 
 # Response:
 {
@@ -594,3 +594,4 @@ secure: true  # HTTPS only
 - [JWT Best Practices](https://tools.ietf.org/html/rfc8725)
 - [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
 - [GitHub OAuth Docs](https://docs.github.com/en/developers/apps/building-oauth-apps)
+

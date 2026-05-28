@@ -15,7 +15,7 @@ export async function GET() {
       return {
         id: d.id,
         domain: d.domain,
-        cname_target: `${project?.slug ?? 'app'}.hosthive.app`,
+        cname_target: `${project?.slug ?? 'app'}.lynxhost.app`,
         verification_status: d.status === 'active' ? 'verified' : 'pending',
         ssl_status: d.ssl ? 'active' : 'pending',
         project_id: d.projectId,
@@ -128,3 +128,4 @@ export async function DELETE(request: NextRequest) {
 
   return NextResponse.json({ success: true }, { status: 200 });
 }
+

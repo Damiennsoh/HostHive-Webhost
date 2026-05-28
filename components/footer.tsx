@@ -37,7 +37,7 @@ export function Footer() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
                 <span className="text-sm font-bold text-black">H</span>
               </div>
-              <span className="text-lg font-semibold text-foreground">HostHive</span>
+              <span className="text-lg font-semibold text-foreground">Lynx Host</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
               Deploy and scale your apps on a modern hosting platform.
@@ -129,10 +129,11 @@ export function Footer() {
 
         <div className="mt-12 border-t border-border pt-8">
           <p className="text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} HostHive. All rights reserved.
+            © {new Date().getFullYear()} Lynx Host. All rights reserved.
           </p>
         </div>
       </div>
     </footer>
   )
 }
+

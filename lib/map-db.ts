@@ -53,7 +53,7 @@ export function mapDbProjectToUi(project: DbProject): Project {
     name: project.name,
     slug: project.slug,
     framework: (project.framework as Framework) || 'nodejs',
-    domain: project.custom_domain || project.assigned_domain || `${project.slug}.hosthive.app`,
+    domain: project.custom_domain || project.assigned_domain || `${project.slug}.lynxhost.app`,
     status: mapProjectStatus(project.status),
     lastDeployment: new Date(project.updated_at).toLocaleDateString(),
     organizationId: 'personal',
@@ -93,7 +93,7 @@ export function mapDbDeploymentToUi(
 ): Deployment {
   const domain =
     project && 'custom_domain' in project
-      ? project.custom_domain || project.assigned_domain || `${project.slug}.hosthive.app`
+      ? project.custom_domain || project.assigned_domain || `${project.slug}.lynxhost.app`
       : undefined;
 
   return {

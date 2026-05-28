@@ -1,12 +1,12 @@
-# HostHive API Reference
+# Lynx Host API Reference
 
-Complete API documentation for HostHive backend integration.
+Complete API documentation for Lynx Host backend integration.
 
 ## Base URL
 
 ```
 Development: http://localhost:3000/api
-Production: https://api.hosthive.app/api
+Production: https://api.lynxhost.app/api
 ```
 
 ## Authentication
@@ -71,7 +71,7 @@ Authorization: Bearer {JWT_TOKEN}
       "repository_branch": "main",
       "project_type": "node",
       "status": "active",
-      "domain": "myapp.hosthive.app",
+      "domain": "myapp.lynxhost.app",
       "environment_variables": {
         "DATABASE_URL": "postgresql://..."
       },
@@ -102,7 +102,7 @@ Authorization: Bearer {JWT_TOKEN}
     "repository_branch": "main",
     "project_type": "node",
     "status": "active",
-    "domain": "myapp.hosthive.app",
+    "domain": "myapp.lynxhost.app",
     "environment_variables": {},
     "build_command": "npm run build",
     "start_command": "npm start",
@@ -143,7 +143,7 @@ Authorization: Bearer {JWT_TOKEN}
     "repository_branch": "main",
     "project_type": "node",
     "status": "active",
-    "domain": "my-new-app.hosthive.app",
+    "domain": "my-new-app.lynxhost.app",
     "environment_variables": {},
     "build_command": "npm run build",
     "start_command": "npm start",
@@ -390,7 +390,7 @@ Authorization: Bearer {JWT_TOKEN}
     {
       "id": "domain_001",
       "project_id": "proj_001",
-      "domain_name": "myapp.hosthive.app",
+      "domain_name": "myapp.lynxhost.app",
       "is_custom": false,
       "ssl_certificate_status": "active",
       "verified": true,
@@ -525,9 +525,9 @@ X-RateLimit-Reset: 1621857600
 ### JavaScript/TypeScript
 
 ```typescript
-import { HostHiveAPI } from 'hosthive-sdk';
+import { Lynx HostAPI } from 'lynxhost-sdk';
 
-const client = new HostHiveAPI({
+const client = new Lynx HostAPI({
   token: 'your_jwt_token'
 });
 
@@ -552,9 +552,9 @@ const deployment = await client.deployments.create('proj_001', {
 ### Python
 
 ```python
-from hosthive import HostHiveAPI
+from lynxhost import Lynx HostAPI
 
-client = HostHiveAPI(token='your_jwt_token')
+client = Lynx HostAPI(token='your_jwt_token')
 
 # List projects
 projects = client.projects.list()
@@ -577,5 +577,6 @@ logs = client.deployments.get_logs('deploy_001')
 
 For API support, issues, or feature requests:
 - GitHub Issues: https://github.com/Damiennsoh/HostHive-Webhost/issues
-- Email: support@hosthive.app
-- Discord: [Join our community](https://discord.gg/hosthive)
+- Email: support@lynxhost.app
+- Discord: [Join our community](https://discord.gg/lynxhost)
+

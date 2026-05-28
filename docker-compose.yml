@@ -1,24 +1,24 @@
 version: '3.8'
 
 services:
-  # HostHive Dashboard (Next.js Frontend)
+  # Lynx Host Dashboard (Next.js Frontend)
   dashboard:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: hosthive-dashboard
+    container_name: lynxhost-dashboard
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_APP_NAME: HostHive
+      NEXT_PUBLIC_APP_NAME: Lynx Host
       NEXT_PUBLIC_API_URL: http://localhost:8000
       # Database URLs will be set via .env file
     volumes:
       - ./node_modules:/app/node_modules
     networks:
-      - hosthive-network
+      - lynxhost-network
 
   # Coolify v4 (Deployment Engine)
   coolify:
@@ -41,39 +41,39 @@ services:
       - COOLIFY_SECRET_KEY=${COOLIFY_SECRET_KEY}
       - COOLIFY_LETS_ENCRYPT_EMAIL=${LETS_ENCRYPT_EMAIL}
     networks:
-      - hosthive-network
+      - lynxhost-network
     profiles:
       - production
 
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: hosthive-postgres
+    container_name: lynxhost-postgres
     restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-hosthive}
-      POSTGRES_USER: ${POSTGRES_USER:-hosthive}
+      POSTGRES_DB: ${POSTGRES_DB:-lynxhost}
+      POSTGRES_USER: ${POSTGRES_USER:-lynxhost}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
-      - hosthive-network
+      - lynxhost-network
     profiles:
       - dev
 
   # Redis for Caching & Sessions
   redis:
     image: redis:7-alpine
-    container_name: hosthive-redis
+    container_name: lynxhost-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis-data:/data
     networks:
-      - hosthive-network
+      - lynxhost-network
     command: redis-server --appendonly yes
     profiles:
       - dev
@@ -99,7 +99,7 @@ services:
       - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL=${LETS_ENCRYPT_EMAIL}
       - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_STORAGE=/acme.json
     networks:
-      - hosthive-network
+      - lynxhost-network
     profiles:
       - production
 
@@ -113,20 +113,20 @@ services:
     volumes:
       - uptime-kuma-data:/app/data
     networks:
-      - hosthive-network
+      - lynxhost-network
     profiles:
       - monitoring
 
   # Cloudflare Tunnel — public demo URL without a VPS (optional)
   cloudflared:
     image: cloudflare/cloudflared:latest
-    container_name: hosthive-cloudflared
+    container_name: lynxhost-cloudflared
     restart: unless-stopped
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
       - dashboard
     networks:
-      - hosthive-network
+      - lynxhost-network
     profiles:
       - demo
 
@@ -138,5 +138,6 @@ volumes:
   uptime-kuma-data:
 
 networks:
-  hosthive-network:
+  lynxhost-network:
     driver: bridge
+

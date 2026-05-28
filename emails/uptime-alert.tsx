@@ -22,7 +22,7 @@ interface UptimeAlertEmailProps {
 export const UptimeAlertEmail = ({
   projectName = 'Your Project',
   projectUrl = 'https://example.com',
-  dashboardUrl = 'https://hosthive.app/dashboard',
+  dashboardUrl = 'https://lynxhost.app/dashboard',
 }: UptimeAlertEmailProps) => (
   <Html>
     <Head />
@@ -31,7 +31,7 @@ export const UptimeAlertEmail = ({
       <Body className="bg-[#020817] my-auto mx-auto font-sans text-white">
         <Container className="border border-amber-500/20 rounded-2xl p-10 overflow-hidden shadow-2xl mt-10">
           <Section className="text-center mb-8">
-            <Text className="text-3xl font-bold tracking-tight">HostHive</Text>
+            <Text className="text-3xl font-bold tracking-tight">Lynx Host</Text>
           </Section>
 
           <Heading className="text-2xl font-bold text-center mb-4 text-amber-500">
@@ -70,7 +70,7 @@ export const UptimeAlertEmail = ({
           <Text className="text-xs text-slate-500 text-center">
             You received this notification because uptime monitoring is enabled for this project.
             <br />
-            HostHive
+            Lynx Host
           </Text>
         </Container>
       </Body>
@@ -79,3 +79,4 @@ export const UptimeAlertEmail = ({
 );
 
 export default UptimeAlertEmail;
+

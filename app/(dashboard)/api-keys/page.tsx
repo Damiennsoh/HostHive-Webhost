@@ -57,7 +57,7 @@ export default function APIKeysPage() {
         <div>
           <h1 className="text-2xl font-semibold text-foreground">API Keys</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Manage API keys for programmatic access to HostHive
+            Manage API keys for programmatic access to Lynx Host
           </p>
         </div>
         <Button 
@@ -180,7 +180,7 @@ export default function APIKeysPage() {
             <Key className="h-12 w-12 text-muted-foreground" />
             <h3 className="mt-4 text-lg font-medium text-foreground">No API keys</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Create an API key to get started with the HostHive API
+              Create an API key to get started with the Lynx Host API
             </p>
             <Button 
               onClick={() => setShowNewKeyForm(true)}
@@ -197,7 +197,7 @@ export default function APIKeysPage() {
       <div className="rounded-lg border border-border bg-card p-6">
         <h3 className="font-medium text-foreground">API Documentation</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Learn how to use the HostHive API to automate your deployments.
+          Learn how to use the Lynx Host API to automate your deployments.
         </p>
         <Button variant="outline" className="mt-4 border-border text-foreground">
           View Documentation
@@ -206,3 +206,4 @@ export default function APIKeysPage() {
     </div>
   )
 }
+

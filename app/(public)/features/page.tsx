@@ -24,84 +24,84 @@ const features = [
     title: "Deploy from your computer",
     description:
       "Upload a folder of HTML, CSS, and JavaScript — no GitHub required. Perfect for landing pages, school projects, and client demos.",
-    color: "text-primary",
+    color: "text-white",
   },
   {
     icon: GitBranch,
     title: "GitHub auto-deploy",
     description:
-      "Connect a repository and HostHive rebuilds your app automatically whenever you push code. Works with Node, Python, Go, and more.",
-    color: "text-primary",
+      "Connect a repository and Lynx Host rebuilds your app automatically whenever you push code. Works with Node, Python, Go, and more.",
+    color: "text-white",
   },
   {
     icon: Container,
     title: "Docker-powered isolation",
     description:
       "Each project runs in its own container with CPU and memory limits. Your app stays separate from everyone else's — like having a private room in a shared building.",
-    color: "text-emerald-400",
+    color: "text-white",
   },
   {
     icon: Globe,
     title: "Custom domains & SSL",
     description:
       "Point your domain with simple DNS records (CNAME, A, TXT). We handle HTTPS certificates automatically once DNS is verified.",
-    color: "text-blue-400",
+    color: "text-white",
   },
   {
     icon: Zap,
     title: "One-click deploy",
     description:
       "No DevOps degree needed. Pick a repo or upload files, click Deploy, and get a live URL in minutes.",
-    color: "text-amber-400",
+    color: "text-white",
   },
   {
     icon: Mail,
     title: "Deploy notifications",
     description:
       "Get an email when a build succeeds or fails so you always know what's live in production.",
-    color: "text-pink-400",
+    color: "text-white",
   },
   {
     icon: Lock,
     title: "Secure by default",
     description:
       "Encrypted login, per-user data isolation in the database, and signed webhooks. Secrets are never shown in logs.",
-    color: "text-emerald-400",
+    color: "text-white",
   },
   {
     icon: Server,
     title: "Built on Coolify + Nixpacks",
     description:
       "We use battle-tested open-source tools to detect your language and build it — you don't maintain servers or build scripts.",
-    color: "text-cyan-400",
+    color: "text-white",
   },
   {
     icon: Layers,
     title: "Frontends & backends",
     description:
       "Host static sites, React/Vue apps, APIs, and custom Dockerfiles on the same platform.",
-    color: "text-purple-400",
+    color: "text-white",
   },
   {
     icon: RefreshCw,
     title: "Deployment history",
     description:
       "See every deploy, who triggered it, and roll back when something breaks (coming in production).",
-    color: "text-orange-400",
+    color: "text-white",
   },
   {
     icon: MapPin,
     title: "Built for Africa & beyond",
     description:
       "Affordable pricing in local currencies, low-bandwidth-friendly dashboards, and infrastructure you can grow without migrating later.",
-    color: "text-primary",
+    color: "text-white",
   },
   {
     icon: Shield,
     title: "Traefik routing",
     description:
       "Professional reverse proxy handles traffic routing and SSL termination — the same pattern used by major cloud providers.",
-    color: "text-green-400",
+    color: "text-white",
   },
 ]
 
@@ -138,9 +138,9 @@ export default function FeaturesPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05 }}
-                className="rounded-2xl border border-border bg-card p-8 transition-colors hover:border-primary/40"
+                className="rounded-md border border-border bg-card p-8 transition-colors hover:border-primary/40"
               >
-                <div className={`mb-4 inline-flex rounded-xl bg-muted p-3 ${feature.color}`}>
+                <div className="mb-4 inline-flex rounded-md bg-muted p-3 text-white">
                   <feature.icon className="size-6" />
                 </div>
                 <h3 className="mb-3 text-xl font-semibold">{feature.title}</h3>
@@ -159,7 +159,7 @@ export default function FeaturesPage() {
           </p>
           <Link
             href="/register"
-            className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-8 text-lg font-medium text-primary-foreground hover:bg-primary/90"
+            className="inline-flex h-12 items-center justify-center rounded-md bg-primary px-8 text-lg font-medium text-primary-foreground hover:bg-primary/90"
           >
             Start for Free
           </Link>
@@ -168,3 +168,4 @@ export default function FeaturesPage() {
     </motion.div>
   )
 }
+

@@ -26,7 +26,7 @@ export const DeploySuccessEmail = ({
   projectUrl = 'https://example.com',
   branchName = 'main',
   commitMessage = 'Initial commit',
-  dashboardUrl = 'https://hosthive.app/dashboard',
+  dashboardUrl = 'https://lynxhost.app/dashboard',
 }: DeploySuccessEmailProps) => (
   <Html>
     <Head />
@@ -35,7 +35,7 @@ export const DeploySuccessEmail = ({
       <Body className="bg-[#020817] my-auto mx-auto font-sans text-white">
         <Container className="border border-white/5 rounded-2xl p-10 overflow-hidden shadow-2xl mt-10">
           <Section className="text-center mb-8">
-            <Text className="text-3xl font-bold tracking-tight">HostHive</Text>
+            <Text className="text-3xl font-bold tracking-tight">Lynx Host</Text>
           </Section>
 
           <Heading className="text-2xl font-bold text-center mb-4">
@@ -78,7 +78,7 @@ export const DeploySuccessEmail = ({
             You received this notification because you have email alerts enabled for deployment
             status.
             <br />
-            HostHive
+            Lynx Host
           </Text>
         </Container>
       </Body>
@@ -108,3 +108,4 @@ function motionBlock({
 }
 
 export default DeploySuccessEmail;
+

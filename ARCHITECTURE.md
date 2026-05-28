@@ -1,8 +1,8 @@
-# HostHive Architecture
+# Lynx Host Architecture
 
 ## System Design Overview
 
-HostHive is built as a composable PaaS platform that combines proven open-source tools with a modern web interface.
+Lynx Host is built as a composable PaaS platform that combines proven open-source tools with a modern web interface.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -25,14 +25,14 @@ HostHive is built as a composable PaaS platform that combines proven open-source
                 ┌─────────────┼─────────────┐
                 │             │             │
         ┌───────▼────────┐    │      ┌──────▼─────────┐
-        │  HostHive      │    │      │  Coolify API   │
+        │  Lynx Host      │    │      │  Coolify API   │
         │  Dashboard     │    │      │  (Deployments) │
         │ (Next.js)      │    │      └────────────────┘
         └────────┬───────┘    │
                  │            │
         ┌────────▼────────────┼────────┐
         │   Docker Network    │        │
-        │   (hosthive-network)│        │
+        │   (lynxhost-network)│        │
         │                     │        │
         │  ┌──────────────┐   │        │
         │  │  PostgreSQL  │◄──┼──┐    │
@@ -140,7 +140,7 @@ HostHive is built as a composable PaaS platform that combines proven open-source
 - Health monitoring
 
 **API Integration**:
-- HostHive calls Coolify API for deployment operations
+- Lynx Host calls Coolify API for deployment operations
 - Webhook notifications on deployment status changes
 
 ### 5. Reverse Proxy (Traefik)
@@ -193,7 +193,7 @@ HostHive is built as a composable PaaS platform that combines proven open-source
    ↓
 9. Let's Encrypt issues SSL
    ↓
-10. HostHive receives webhook notification
+10. Lynx Host receives webhook notification
     ↓
 11. Update deployment status in DB
     ↓
@@ -370,7 +370,7 @@ deployed_at
 - Advanced role-based access control
 
 ### Medium Term
-- Kubernetes operator for HostHive
+- Kubernetes operator for Lynx Host
 - Multi-region deployment
 - Advanced monitoring dashboard
 - Automated backups
@@ -410,3 +410,4 @@ deployed_at
 - ✅ Excellent scalability
 - ✅ Rich ecosystem
 - ✅ Free and open-source
+

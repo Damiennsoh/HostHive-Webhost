@@ -1,4 +1,4 @@
--- HostHive Database Schema
+-- Lynx Host Database Schema
 -- PostgreSQL Database Initialization Script
 
 -- Enable necessary extensions
@@ -284,9 +284,10 @@ ORDER BY d.created_at DESC;
 -- Uncomment to seed database with sample data
 
 -- INSERT INTO users (email, name) VALUES
--- ('dev@hosthive.app', 'Developer'),
+-- ('dev@lynxhost.app', 'Developer'),
 -- ('test@example.com', 'Test User');
 
 -- INSERT INTO projects (user_id, name, repository_url, repository_branch, project_type)
 -- SELECT id, 'Sample Project', 'https://github.com/example/repo', 'main', 'node'
 -- FROM users LIMIT 1;
+
