@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
   let host: string;
   let port: number;
   let status: 'provisioning' | 'running' | 'failed' = 'running';
-  let internalNetwork: string | null = 'hosthive_private';
+  let internalNetwork: string | null = 'lynxhost_private';
 
   try {
     if (isCoolifyDatabaseConfigured()) {
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       }
       status = 'running';
     } else {
-      host = `${slug}.hosthive-internal`;
+      host = `${slug}.lynxhost-internal`;
       port = db_type === 'redis' ? 6379 : db_type === 'mysql' ? 3306 : 5432;
       connectionUrl = buildConnectionUrl(db_type, {
         host,
@@ -165,3 +165,4 @@ export async function POST(request: NextRequest) {
     { status: 201 }
   );
 }
+

@@ -13,11 +13,11 @@ export async function requireAuth(): Promise<AuthResult | NextResponse> {
   if (MOCK_AUTH_ENABLED) {
     const { cookies } = await import('next/headers');
     const cookieStore = await cookies();
-    if (cookieStore.get('hosthive_mock')?.value === '1') {
+    if (cookieStore.get('lynxhost_mock')?.value === '1') {
       return {
         user: {
           id: 'mock_user',
-          email: 'demo@hosthive.app',
+          email: 'demo@lynxhost.app',
           app_metadata: {},
           user_metadata: { full_name: 'Demo User', plan: 'free' },
           aud: 'authenticated',
@@ -47,3 +47,4 @@ export function isAuthError(
 ): result is NextResponse {
   return result instanceof NextResponse;
 }
+

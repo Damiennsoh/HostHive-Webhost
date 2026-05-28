@@ -4,7 +4,7 @@ import { DeploySuccessEmail } from '@/emails/deploy-success';
 import { DeployFailedEmail } from '@/emails/deploy-failed';
 import { UptimeAlertEmail } from '@/emails/uptime-alert';
 
-const FROM = process.env.RESEND_FROM_EMAIL ?? 'noreply@hosthive.app';
+const FROM = process.env.RESEND_FROM_EMAIL ?? 'noreply@lynxhost.app';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
 function getResend() {
@@ -81,3 +81,4 @@ export async function sendDeployEmail(
     return null;
   }
 }
+

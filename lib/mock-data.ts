@@ -46,7 +46,7 @@ export const mockProjects: Project[] = [
     name: 'marketing-site',
     slug: 'marketing-site',
     framework: 'nextjs',
-    domain: 'marketing.hosthive.app',
+    domain: 'marketing.lynxhost.app',
     status: 'ready',
     lastDeployment: '2 hours ago',
     organizationId: 'org_1',
@@ -60,7 +60,7 @@ export const mockProjects: Project[] = [
     name: 'dashboard-app',
     slug: 'dashboard-app',
     framework: 'react',
-    domain: 'dashboard.hosthive.app',
+    domain: 'dashboard.lynxhost.app',
     status: 'building',
     lastDeployment: '5 minutes ago',
     organizationId: 'org_1',
@@ -74,7 +74,7 @@ export const mockProjects: Project[] = [
     name: 'api-gateway',
     slug: 'api-gateway',
     framework: 'nodejs',
-    domain: 'api.hosthive.app',
+    domain: 'api.lynxhost.app',
     status: 'ready',
     lastDeployment: '1 day ago',
     organizationId: 'org_2',
@@ -88,7 +88,7 @@ export const mockProjects: Project[] = [
     name: 'mobile-backend',
     slug: 'mobile-backend',
     framework: 'express',
-    domain: 'mobile-api.hosthive.app',
+    domain: 'mobile-api.lynxhost.app',
     status: 'error',
     lastDeployment: '3 hours ago',
     organizationId: 'org_2',
@@ -102,7 +102,7 @@ export const mockProjects: Project[] = [
     name: 'docs-site',
     slug: 'docs-site',
     framework: 'nextjs',
-    domain: 'docs.hosthive.app',
+    domain: 'docs.lynxhost.app',
     status: 'ready',
     lastDeployment: '6 hours ago',
     organizationId: 'org_1',
@@ -116,7 +116,7 @@ export const mockProjects: Project[] = [
     name: 'analytics-service',
     slug: 'analytics-service',
     framework: 'python',
-    domain: 'analytics.hosthive.app',
+    domain: 'analytics.lynxhost.app',
     status: 'ready',
     lastDeployment: '12 hours ago',
     organizationId: 'org_3',
@@ -138,7 +138,7 @@ export const mockDeployments: Deployment[] = [
     status: 'ready',
     duration: 45,
     createdAt: '2024-03-15T14:30:00Z',
-    url: 'https://marketing-a1b2c3d.hosthive.app',
+    url: 'https://marketing-a1b2c3d.lynxhost.app',
   },
   {
     id: 'dep_2',
@@ -161,7 +161,7 @@ export const mockDeployments: Deployment[] = [
     status: 'ready',
     duration: 62,
     createdAt: '2024-03-14T10:00:00Z',
-    url: 'https://api-i7j8k9l.hosthive.app',
+    url: 'https://api-i7j8k9l.lynxhost.app',
   },
   {
     id: 'dep_4',
@@ -191,7 +191,7 @@ export const mockDeployments: Deployment[] = [
     status: 'ready',
     duration: 38,
     createdAt: '2024-03-15T08:00:00Z',
-    url: 'https://docs-q4r5s6t.hosthive.app',
+    url: 'https://docs-q4r5s6t.lynxhost.app',
   },
   {
     id: 'dep_6',
@@ -203,7 +203,7 @@ export const mockDeployments: Deployment[] = [
     status: 'ready',
     duration: 42,
     createdAt: '2024-03-14T16:00:00Z',
-    url: 'https://marketing-u7v8w9x.hosthive.app',
+    url: 'https://marketing-u7v8w9x.lynxhost.app',
   },
   {
     id: 'dep_7',
@@ -215,7 +215,7 @@ export const mockDeployments: Deployment[] = [
     status: 'ready',
     duration: 89,
     createdAt: '2024-03-15T06:00:00Z',
-    url: 'https://analytics-y1z2a3b.hosthive.app',
+    url: 'https://analytics-y1z2a3b.lynxhost.app',
   },
 ]
 
@@ -305,7 +305,7 @@ export const mockNotifications: Notification[] = [
   {
     id: 'notif_3',
     title: 'Domain Verified',
-    message: 'docs.hosthive.app is now active',
+    message: 'docs.lynxhost.app is now active',
     type: 'info',
     read: true,
     createdAt: '2024-03-14T09:00:00Z',
@@ -332,7 +332,7 @@ export const mockAPIKeys: APIKey[] = [
 export const mockDomains: Domain[] = [
   {
     id: 'dom_1',
-    domain: 'marketing.hosthive.app',
+    domain: 'marketing.lynxhost.app',
     projectId: 'proj_1',
     status: 'active',
     ssl: true,
@@ -348,7 +348,7 @@ export const mockDomains: Domain[] = [
   },
   {
     id: 'dom_3',
-    domain: 'dashboard.hosthive.app',
+    domain: 'dashboard.lynxhost.app',
     projectId: 'proj_2',
     status: 'active',
     ssl: true,
@@ -356,7 +356,7 @@ export const mockDomains: Domain[] = [
   },
   {
     id: 'dom_4',
-    domain: 'api.hosthive.app',
+    domain: 'api.lynxhost.app',
     projectId: 'proj_3',
     status: 'active',
     ssl: true,
@@ -380,3 +380,4 @@ export const frameworkOptions = [
   { value: 'docker', label: 'Docker', icon: 'docker' },
   { value: 'static', label: 'Static', icon: 'static' },
 ] as const
+

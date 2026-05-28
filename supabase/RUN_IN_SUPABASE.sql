@@ -1,5 +1,5 @@
-﻿-- =============================================================================
--- HostHive — Run this entire file in Supabase SQL Editor
+-- =============================================================================
+-- Lynx Host � Run this entire file in Supabase SQL Editor
 -- Safe to re-run: uses IF NOT EXISTS / DROP IF EXISTS where needed
 -- =============================================================================
 
@@ -342,4 +342,5 @@ CREATE TRIGGER set_managed_databases_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- Done.
-SELECT 'HostHive schema applied successfully.' AS status;
+SELECT 'Lynx Host schema applied successfully.' AS status;
+

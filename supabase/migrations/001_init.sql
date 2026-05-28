@@ -1,4 +1,4 @@
--- HostHive MVP — Supabase PostgreSQL Schema
+-- Lynx Host MVP — Supabase PostgreSQL Schema
 -- Run via: supabase db push OR paste in Supabase SQL Editor
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -145,3 +145,4 @@ CREATE TRIGGER set_projects_updated_at
 CREATE TRIGGER set_env_vars_updated_at
   BEFORE UPDATE ON public.env_vars
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+

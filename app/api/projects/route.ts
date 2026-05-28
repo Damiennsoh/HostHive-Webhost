@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     }
 
     const runtime = mapProjectTypeToRuntime(type);
-    const baseDomain = process.env.BASE_DOMAIN ?? 'hosthive.app';
+    const baseDomain = process.env.BASE_DOMAIN ?? 'lynxhost.app';
     const assignedDomain = `${slug}.${baseDomain}`;
 
     let coolifyUuid: string | null = null;
@@ -127,3 +127,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+

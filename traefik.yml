@@ -1,4 +1,4 @@
-# Traefik Configuration for HostHive
+# Traefik Configuration for Lynx Host
 # Dynamic reverse proxy with automatic SSL/TLS and Docker integration
 
 global:
@@ -26,16 +26,16 @@ entryPoints:
       tls:
         certResolver: letsencrypt
         domains:
-          - main: "*.hosthive.app"
+          - main: "*.lynxhost.app"
             sans:
-              - "hosthive.app"
+              - "lynxhost.app"
 
 # Providers
 providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
-    network: hosthive-network
+    network: lynxhost-network
 
   file:
     filename: /traefik.yml
@@ -62,3 +62,4 @@ log:
 
 accessLog:
   format: common
+

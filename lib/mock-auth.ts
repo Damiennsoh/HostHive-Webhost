@@ -4,8 +4,8 @@ export const MOCK_AUTH_ENABLED =
   process.env.NEXT_PUBLIC_MOCK_AUTH === 'true' ||
   process.env.NEXT_PUBLIC_MOCK_AUTH === '1';
 
-const STORAGE_KEY = 'hosthive_mock_user';
-const COOKIE_NAME = 'hosthive_mock';
+const STORAGE_KEY = 'lynxhost_mock_user';
+const COOKIE_NAME = 'lynxhost_mock';
 
 export function getMockUser(): User | null {
   if (typeof window === 'undefined') return null;
@@ -44,3 +44,4 @@ export function isSupabaseConfigured(): boolean {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
   return Boolean(url && key && !url.includes('your-project') && !key.includes('replace-with'));
 }
+

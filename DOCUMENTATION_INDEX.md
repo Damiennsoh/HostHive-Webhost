@@ -1,6 +1,6 @@
-# HostHive Documentation Index
+# Lynx Host Documentation Index
 
-Complete guide to all documentation and resources for the HostHive web hosting platform.
+Complete guide to all documentation and resources for the Lynx Host web hosting platform.
 
 ## Getting Started
 
@@ -342,7 +342,7 @@ docker-compose --profile production up -d
 docker-compose logs -f dashboard
 
 # Connect to database
-docker-compose exec postgres psql -U hosthive -d hosthive
+docker-compose exec postgres psql -U lynxhost -d lynxhost
 
 # Stop services
 docker-compose down
@@ -359,7 +359,7 @@ See [QUICKSTART.md - Common Commands](./QUICKSTART.md#common-commands) for more.
 # Login
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"dev@hosthive.app","password":"password123"}'
+  -d '{"email":"dev@lynxhost.app","password":"password123"}'
 
 # Get projects
 curl http://localhost:3000/api/projects \
@@ -437,7 +437,7 @@ Documentation/
 - Traefik: https://traefik.io/blog/
 
 ### Contact
-- Email: support@hosthive.app
+- Email: support@lynxhost.app
 - Discord: [Join Community](#)
 - GitHub: [Discussions](#)
 
@@ -456,3 +456,4 @@ Documentation/
 ---
 
 **Start with [README.md](./README.md) or [QUICKSTART.md](./QUICKSTART.md) →**
+

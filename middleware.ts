@@ -51,7 +51,7 @@ export async function middleware(request: NextRequest) {
 
   if (useMockOnly) {
     const { pathname } = request.nextUrl;
-    const hasMockSession = request.cookies.get('hosthive_mock')?.value === '1';
+    const hasMockSession = request.cookies.get('lynxhost_mock')?.value === '1';
 
     if (!hasMockSession && isProtectedRoute(pathname)) {
       const url = request.nextUrl.clone();
@@ -115,3 +115,4 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
+

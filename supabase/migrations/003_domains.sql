@@ -1,4 +1,4 @@
--- HostHive — Custom domains (Vercel-style DNS verification)
+-- Lynx Host — Custom domains (Vercel-style DNS verification)
 CREATE TABLE IF NOT EXISTS public.custom_domains (
   id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   project_id          UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
@@ -47,3 +47,4 @@ DROP TRIGGER IF EXISTS set_custom_domains_updated_at ON public.custom_domains;
 CREATE TRIGGER set_custom_domains_updated_at
   BEFORE UPDATE ON public.custom_domains
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+

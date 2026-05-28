@@ -1,6 +1,6 @@
-# HostHive Quick Start Checklist
+# Lynx Host Quick Start Checklist
 
-Get HostHive running in minutes with this comprehensive checklist.
+Get Lynx Host running in minutes with this comprehensive checklist.
 
 ## Pre-Flight Checks
 
@@ -43,7 +43,7 @@ pnpm dev
 ### 5. Access Dashboard
 - **Dashboard**: http://localhost:3000
 - **Demo Login**: 
-  - Email: `dev@hosthive.app`
+  - Email: `dev@lynxhost.app`
   - Password: `password123`
 
 ### 6. Verify Services
@@ -52,28 +52,28 @@ pnpm dev
 docker-compose ps
 
 # Should see:
-# - hosthive-dashboard (Next.js)
-# - hosthive-postgres (Database)
-# - hosthive-redis (Cache)
+# - lynxhost-dashboard (Next.js)
+# - lynxhost-postgres (Database)
+# - lynxhost-redis (Cache)
 ```
 
 ## Local Database Setup (Optional)
 
 ### 1. Access PostgreSQL
 ```bash
-docker-compose exec postgres psql -U hosthive -d hosthive
+docker-compose exec postgres psql -U lynxhost -d lynxhost
 ```
 
 ### 2. Initialize Schema
 ```bash
 # From your terminal (outside container)
-docker-compose exec postgres psql -U hosthive -d hosthive < schema.sql
+docker-compose exec postgres psql -U lynxhost -d lynxhost < schema.sql
 ```
 
 ### 3. Insert Sample Data
 ```sql
 INSERT INTO users (email, name) VALUES
-  ('dev@hosthive.app', 'Developer'),
+  ('dev@lynxhost.app', 'Developer'),
   ('test@example.com', 'Test User');
 ```
 
@@ -81,7 +81,7 @@ INSERT INTO users (email, name) VALUES
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| Dashboard | http://localhost:3000 | HostHive web UI |
+| Dashboard | http://localhost:3000 | Lynx Host web UI |
 | Traefik | http://localhost:8080 | Reverse proxy dashboard |
 | PostgreSQL | localhost:5432 | Database |
 | Redis | localhost:6379 | Cache |
@@ -135,13 +135,13 @@ docker-compose build
 
 ```bash
 # Connect to database
-docker-compose exec postgres psql -U hosthive -d hosthive
+docker-compose exec postgres psql -U lynxhost -d lynxhost
 
 # Backup database
-docker-compose exec postgres pg_dump -U hosthive hosthive > backup.sql
+docker-compose exec postgres pg_dump -U lynxhost lynxhost > backup.sql
 
 # Restore database
-docker-compose exec postgres psql -U hosthive hosthive < backup.sql
+docker-compose exec postgres psql -U lynxhost lynxhost < backup.sql
 ```
 
 ### Development
@@ -193,12 +193,12 @@ curl -L "https://github.com/docker/compose/releases/latest/download/docker-compo
 chmod +x /usr/local/bin/docker-compose
 ```
 
-#### 3. Deploy HostHive
+#### 3. Deploy Lynx Host
 
 ```bash
 # Clone repository
-git clone https://github.com/Damiennsoh/HostHive-Webhost.git /app/hosthive
-cd /app/hosthive
+git clone https://github.com/Damiennsoh/HostHive-Webhost.git /app/lynxhost
+cd /app/lynxhost
 
 # Configure environment
 cp .env.example .env.production
@@ -223,11 +223,11 @@ docker-compose ps
 Update DNS records:
 
 ```
-A record: hosthive.example.com → your_droplet_ip
-CNAME: *.hosthive.example.com → hosthive.example.com
+A record: lynxhost.example.com → your_droplet_ip
+CNAME: *.lynxhost.example.com → lynxhost.example.com
 ```
 
-Access at: https://hosthive.example.com
+Access at: https://lynxhost.example.com
 
 ## Troubleshooting
 
@@ -245,7 +245,7 @@ kill -9 <PID>
 
 ```bash
 # Test database
-docker-compose exec postgres pg_isready -U hosthive
+docker-compose exec postgres pg_isready -U lynxhost
 
 # Check logs
 docker-compose logs postgres
@@ -288,7 +288,7 @@ docker system df
 - 📖 **Documentation**: See README.md, DEPLOYMENT.md, API_REFERENCE.md
 - 🐛 **Issues**: GitHub Issues tracker
 - 💬 **Discussions**: GitHub Discussions
-- 📧 **Email**: support@hosthive.app
+- 📧 **Email**: support@lynxhost.app
 
 ## Quick Reference
 
@@ -299,7 +299,7 @@ Key environment variables for `.env.local`:
 ```bash
 # Required
 NEXT_PUBLIC_API_URL=http://localhost:3000
-DATABASE_URL=postgresql://hosthive:secure_password@localhost:5432/hosthive
+DATABASE_URL=postgresql://lynxhost:secure_password@localhost:5432/lynxhost
 
 # Optional (for features)
 GITHUB_CLIENT_ID=your_github_client_id
@@ -339,3 +339,4 @@ curl -X POST http://localhost:3000/api/projects \
 **Ready to deploy? Let's go!** 🚀
 
 For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+

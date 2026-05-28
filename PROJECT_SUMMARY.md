@@ -1,8 +1,8 @@
-# HostHive Project Summary
+# Lynx Host Project Summary
 
 ## Project Overview
 
-HostHive is a professional-grade web hosting platform built with modern web technologies, designed to compete with Vercel and Render. It provides a complete solution for deploying frontends, backends, and containerized applications with ease.
+Lynx Host is a professional-grade web hosting platform built with modern web technologies, designed to compete with Vercel and Render. It provides a complete solution for deploying frontends, backends, and containerized applications with ease.
 
 ## What Has Been Built
 
@@ -237,9 +237,9 @@ ssh root@your_vps_ip
 # 2. Install Docker
 curl -fsSL https://get.docker.com | sh
 
-# 3. Deploy HostHive
-git clone https://github.com/Damiennsoh/HostHive-Webhost.git /app/hosthive
-cd /app/hosthive
+# 3. Deploy Lynx Host
+git clone https://github.com/Damiennsoh/HostHive-Webhost.git /app/lynxhost
+cd /app/lynxhost
 
 # 4. Configure
 cp .env.example .env.production
@@ -399,7 +399,7 @@ The project is ready to:
 
 ## Conclusion
 
-HostHive MVP is complete and ready for:
+Lynx Host MVP is complete and ready for:
 1. **Demonstration** to employers/investors
 2. **Development** of additional features
 3. **Deployment** to production
@@ -416,3 +416,4 @@ The foundation is solid, the architecture is scalable, and the codebase is clean
 **Time to First Project Deploy**: 5-10 minutes
 
 Good luck with your web hosting platform! 🚀
+

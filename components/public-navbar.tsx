@@ -26,7 +26,7 @@ export function PublicNavbar() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
               <span className="text-sm font-bold text-black">H</span>
             </div>
-            <span className="text-lg font-semibold text-foreground">HostHive</span>
+            <span className="text-lg font-semibold text-foreground">Lynx Host</span>
           </Link>
           
           <div className="hidden items-center gap-1 md:flex">
@@ -122,3 +122,4 @@ export function PublicNavbar() {
     </header>
   )
 }
+

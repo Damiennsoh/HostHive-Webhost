@@ -1,4 +1,4 @@
--- HostHive MVP — Row Level Security (RLS) Policies
+-- Lynx Host MVP — Row Level Security (RLS) Policies
 
 ALTER TABLE public.profiles      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects      ENABLE ROW LEVEL SECURITY;
@@ -93,3 +93,4 @@ CREATE POLICY "users_select_own_notifications"
 CREATE POLICY "users_insert_own_notifications"
   ON public.notifications FOR INSERT
   WITH CHECK (auth.uid() = user_id);
+

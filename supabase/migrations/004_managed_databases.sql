@@ -1,4 +1,4 @@
--- HostHive — Managed databases (PostgreSQL, MySQL, Redis via Coolify)
+-- Lynx Host — Managed databases (PostgreSQL, MySQL, Redis via Coolify)
 
 -- Ensure plan column exists (Supabase starter schemas may omit it)
 ALTER TABLE public.profiles
@@ -64,3 +64,4 @@ DROP TRIGGER IF EXISTS set_managed_databases_updated_at ON public.managed_databa
 CREATE TRIGGER set_managed_databases_updated_at
   BEFORE UPDATE ON public.managed_databases
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+

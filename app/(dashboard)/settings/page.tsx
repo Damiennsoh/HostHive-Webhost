@@ -415,7 +415,7 @@ export default function SettingsPage() {
                     { id: 'deployments', label: 'Deployment notifications', description: 'Get notified when deployments succeed or fail' },
                     { id: 'security', label: 'Security alerts', description: 'Important security notifications about your account' },
                     { id: 'product', label: 'Product updates', description: 'New features and improvements' },
-                    { id: 'marketing', label: 'Marketing emails', description: 'Tips and offers from HostHive' },
+                    { id: 'marketing', label: 'Marketing emails', description: 'Tips and offers from Lynx Host' },
                   ].map((pref) => (
                     <div key={pref.id} className="flex items-center justify-between">
                       <div>
@@ -444,3 +444,4 @@ export default function SettingsPage() {
     </div>
   )
 }
+

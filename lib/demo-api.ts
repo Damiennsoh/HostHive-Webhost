@@ -103,7 +103,7 @@ export function createDemoDbProject(input: {
   source?: 'github' | 'upload';
 }): DbProject {
   const now = new Date().toISOString();
-  const baseDomain = process.env.BASE_DOMAIN ?? 'hosthive.app';
+  const baseDomain = process.env.BASE_DOMAIN ?? 'lynxhost.app';
   const project: DbProject = {
     id: `demo_${Date.now()}`,
     user_id: 'mock_user',
@@ -192,3 +192,4 @@ export function buildDemoDashboardPayload() {
 
   return { success: true, stats, recentProjects, recentDeployments, activity };
 }
+

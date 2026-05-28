@@ -1,8 +1,8 @@
-# HostHive - Professional Web Hosting Platform
+# Lynx Host - Professional Web Hosting Platform
 
 A modern, scalable web hosting platform similar to Vercel and Render. Deploy frontends, backends, and Docker containers with ease. Built with Next.js, React, Coolify, and Traefik.
 
-![HostHive Dashboard](https://img.shields.io/badge/status-MVP%20In%20Progress-orange)
+![Lynx Host Dashboard](https://img.shields.io/badge/status-MVP%20In%20Progress-orange)
 ![Next.js](https://img.shields.io/badge/Next.js-16+-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19+-61dafb?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript)
@@ -104,7 +104,7 @@ For managed databases (PostgreSQL/MySQL/Redis), set `COOLIFY_SERVER_UUID` from C
 
 ### 4. Why Docker? (What each service does)
 
-HostHive uses Docker so you **never run a custom build system or per-user VPS**. One machine runs isolated containers for every customer project.
+Lynx Host uses Docker so you **never run a custom build system or per-user VPS**. One machine runs isolated containers for every customer project.
 
 | Service | Role |
 |---------|------|
@@ -114,7 +114,7 @@ HostHive uses Docker so you **never run a custom build system or per-user VPS**.
 | **PostgreSQL / Redis** | Optional local stack; production uses **Supabase** for auth + data |
 | **Cloudflare Tunnel** (`--profile demo`) | Public HTTPS URL for employer demos without buying a domain |
 
-**Container isolation:** Coolify runs each project in its **own Docker container** with separate networks and resource limits (`--cpus`, `--memory`). User apps cannot access each other or the host filesystem. HostHive stores secrets in Supabase; Coolify only receives them at deploy time.
+**Container isolation:** Coolify runs each project in its **own Docker container** with separate networks and resource limits (`--cpus`, `--memory`). User apps cannot access each other or the host filesystem. Lynx Host stores secrets in Supabase; Coolify only receives them at deploy time.
 
 ```bash
 # Start Coolify + Traefik (production profile)
@@ -134,13 +134,13 @@ Visit http://localhost:3000 — register, create a project at `/projects/new`, a
 
 ### 6. Custom domains (Vercel-style DNS)
 
-When you add a domain, HostHive shows **Type / Name / Value** records:
+When you add a domain, Lynx Host shows **Type / Name / Value** records:
 
 | Type | Name | Value | Purpose |
 |------|------|-------|---------|
-| **CNAME** | `www` or subdomain | `{project-slug}.hosthive.app` | Route traffic to your deployment |
+| **CNAME** | `www` or subdomain | `{project-slug}.lynxhost.app` | Route traffic to your deployment |
 | **A** | `@` | Your server IP | Apex domains |
-| **TXT** | `_hosthive` | `hosthive-verify={slug}` | Domain ownership verification before SSL |
+| **TXT** | `_lynxhost` | `lynxhost-verify={slug}` | Domain ownership verification before SSL |
 
 Traefik + Coolify provision SSL once DNS propagates.
 
@@ -183,7 +183,7 @@ pnpm dev
 Visit http://localhost:3000 in your browser.
 
 **Demo Credentials**:
-- Email: `dev@hosthive.app`
+- Email: `dev@lynxhost.app`
 - Password: `password123`
 
 ## Project Structure
@@ -311,7 +311,7 @@ const { data: deployment } = await apiClient.post(
 # Login
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"dev@hosthive.app","password":"password123"}'
+  -d '{"email":"dev@lynxhost.app","password":"password123"}'
 
 # Get projects
 curl http://localhost:3000/api/projects \
@@ -354,11 +354,11 @@ docker-compose --profile production up -d
 
 ### Using Coolify
 
-HostHive integrates seamlessly with Coolify:
+Lynx Host integrates seamlessly with Coolify:
 
 1. Deploy Coolify on your server
 2. Connect your GitHub account
-3. Create a new deployment from the HostHive repo
+3. Create a new deployment from the Lynx Host repo
 4. Coolify handles builds, scaling, and monitoring
 
 ## Monitoring
@@ -455,11 +455,11 @@ MIT License - See [LICENSE](./LICENSE) for details
 
 ## Support
 
-- 📖 **Documentation**: [docs.hosthive.app](https://docs.hosthive.app)
+- 📖 **Documentation**: [docs.lynxhost.app](https://docs.lynxhost.app)
 - 🐛 **Issues**: [GitHub Issues](https://github.com/Damiennsoh/HostHive-Webhost/issues)
 - 💬 **Discussions**: [GitHub Discussions](https://github.com/Damiennsoh/HostHive-Webhost/discussions)
-- 📧 **Email**: support@hosthive.app
-- 💬 **Discord**: [Join Community](https://discord.gg/hosthive)
+- 📧 **Email**: support@lynxhost.app
+- 💬 **Discord**: [Join Community](https://discord.gg/lynxhost)
 
 ## Acknowledgments
 
@@ -471,7 +471,7 @@ MIT License - See [LICENSE](./LICENSE) for details
 
 ## Sponsor
 
-If you find HostHive useful, please consider:
+If you find Lynx Host useful, please consider:
 - ⭐ Starring the repository
 - 🐛 Reporting bugs
 - 💡 Suggesting features
@@ -479,6 +479,7 @@ If you find HostHive useful, please consider:
 
 ---
 
-**Built with ❤️ by the HostHive Community**
+**Built with ❤️ by the Lynx Host Community**
 
 Made with Next.js, React, and TypeScript.
+

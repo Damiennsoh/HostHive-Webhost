@@ -16,7 +16,7 @@ export function getDnsRecordsForDomain(domain: string, projectSlug: string): Dns
       type: 'CNAME',
       name: domain.startsWith('www.') ? 'www' : domain,
       value: cnameTarget,
-      purpose: 'Routes traffic to your HostHive deployment',
+      purpose: 'Routes traffic to your Lynx Host deployment',
     },
   ];
 
@@ -31,8 +31,8 @@ export function getDnsRecordsForDomain(domain: string, projectSlug: string): Dns
 
   records.push({
     type: 'TXT',
-    name: '_hosthive',
-    value: `hosthive-verify=${projectSlug}`,
+    name: '_lynxhost',
+    value: `lynxhost-verify=${projectSlug}`,
     purpose: 'Proves you own this domain before SSL is issued',
   });
 
@@ -55,3 +55,4 @@ export function getDefaultPlatformRecords(): DnsRecord[] {
     },
   ];
 }
+

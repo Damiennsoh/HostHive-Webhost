@@ -35,7 +35,7 @@ const plans = [
       { name: "3 active projects", included: true },
       { name: "Static upload + GitHub deploy", included: true },
       { name: "100 GB bandwidth / month", included: true },
-      { name: "Free SSL on *.hosthive.app", included: true },
+      { name: "Free SSL on *.lynxhost.app", included: true },
       { name: "Preview deployments", included: true },
       { name: "Community support", included: true },
       { name: "Custom domains", included: false },
@@ -148,9 +148,9 @@ export default function PricingPage() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.08 }}
-                className="rounded-xl border border-primary/20 bg-primary/5 p-5"
+                className="rounded-md border border-primary/20 bg-primary/5 p-5"
               >
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                   <Sparkles className="size-3" />
                   {promo.label}
                 </span>
@@ -171,7 +171,7 @@ export default function PricingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={`relative rounded-2xl border p-8 ${
+                className={`relative rounded-md border p-8 ${
                   plan.highlighted
                     ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
                     : "border-border bg-card"
@@ -179,13 +179,13 @@ export default function PricingPage() {
               >
                 {plan.highlighted && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-primary px-4 py-1 text-sm font-medium text-primary-foreground">
+                    <span className="rounded-md bg-primary px-4 py-1 text-sm font-medium text-primary-foreground">
                       Best for startups
                     </span>
                   </div>
                 )}
                 {plan.badge && !plan.highlighted && (
-                  <span className="mb-3 inline-block rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
+                  <span className="mb-3 inline-block rounded-md bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
                     {plan.badge}
                   </span>
                 )}
@@ -272,3 +272,4 @@ export default function PricingPage() {
     </motion.div>
   )
 }
+
