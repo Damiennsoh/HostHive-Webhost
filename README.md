@@ -100,6 +100,10 @@ COOLIFY_API_TOKEN=
 
 Run **`supabase/RUN_IN_SUPABASE.sql`** in the Supabase SQL Editor (single paste), or run migrations `001`–`004` in order. Set `NEXT_PUBLIC_MOCK_AUTH=false` for real authentication.
 
+### Deploying on Vercel
+
+`.env.local` is not uploaded to Vercel. Add the same Supabase variables in **Vercel → Settings → Environment Variables**, then **Redeploy**. See [VERCEL_ENV.md](./VERCEL_ENV.md).
+
 For managed databases (PostgreSQL/MySQL/Redis), set `COOLIFY_SERVER_UUID` from Coolify → Servers.
 
 ### 4. Why Docker? (What each service does)

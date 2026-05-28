@@ -1,17 +1,17 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database } from '@/types/supabase';
+import { getSupabaseEnv, isSupabaseConfigured, supabaseConfigErrorMessage } from './env';
 
 export async function createClient() {
-  const cookieStore = await cookies();
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Supabase URL or anon key is not configured');
+  if (!isSupabaseConfigured()) {
+    throw new Error(supabaseConfigErrorMessage());
   }
 
-  return createServerClient<Database>(supabaseUrl, supabaseKey, {
+  const cookieStore = await cookies();
+  const { url, anonKey } = getSupabaseEnv();
+
+  return createServerClient<Database>(url, anonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -28,3 +28,5 @@ export async function createClient() {
     },
   });
 }
+
+export { isSupabaseConfigured };

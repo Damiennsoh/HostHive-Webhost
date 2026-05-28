@@ -10,8 +10,24 @@ import {
 } from 'react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { User, Organization } from './types';
-import { MOCK_AUTH_ENABLED, getMockUser, setMockUser, clearMockUser, createMockUser } from './mock-auth';
-import { createClient } from '@/lib/supabase/client';
+import {
+  MOCK_AUTH_ENABLED,
+  getMockUser,
+  setMockUser,
+  clearMockUser,
+  createMockUser,
+} from './mock-auth';
+import {
+  tryCreateClient,
+  isSupabaseConfigured,
+  supabaseConfigErrorMessage,
+} from '@/lib/supabase/client';
+import { getAppOrigin, mapAuthErrorMessage } from '@/lib/auth-errors';
+
+export interface RegisterResult {
+  /** User must confirm email before sign-in (Supabase default). */
+  needsEmailConfirmation: boolean;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -20,8 +36,9 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   isDemoMode: boolean;
+  configError: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, username: string, password: string) => Promise<void>;
+  register: (email: string, username: string, password: string) => Promise<RegisterResult>;
   logout: () => Promise<void>;
   switchOrganization: (orgId: string) => void;
   refreshProfile: () => Promise<void>;
@@ -38,13 +55,15 @@ function organizationFromPlan(plan: User['plan'] = 'free'): Organization {
   };
 }
 
-async function loadProfile(supabaseUser: SupabaseUser): Promise<User> {
-  const supabase = createClient();
+async function loadProfile(
+  supabase: NonNullable<ReturnType<typeof tryCreateClient>>,
+  supabaseUser: SupabaseUser
+): Promise<User> {
   const { data: profile } = await supabase
     .from('profiles')
     .select('full_name, avatar_url, plan')
     .eq('id', supabaseUser.id)
-    .single();
+    .maybeSingle();
 
   const plan = (profile?.plan as User['plan']) ?? 'free';
 
@@ -66,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [configError, setConfigError] = useState<string | null>(null);
   const useMockAuth = MOCK_AUTH_ENABLED;
 
   const applyUser = useCallback((mapped: User | null) => {
@@ -74,30 +94,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshProfile = useCallback(async () => {
-    if (useMockAuth) return;
-    const supabase = createClient();
+    if (useMockAuth || !isSupabaseConfigured()) return;
+    const supabase = tryCreateClient();
+    if (!supabase) return;
     const {
       data: { user: supabaseUser },
     } = await supabase.auth.getUser();
     if (supabaseUser) {
-      const mapped = await loadProfile(supabaseUser);
+      const mapped = await loadProfile(supabase, supabaseUser);
       applyUser(mapped);
     }
   }, [useMockAuth, applyUser]);
 
   useEffect(() => {
     if (useMockAuth) {
+      setConfigError(null);
       const stored = getMockUser();
       if (stored) applyUser(stored);
       setIsLoading(false);
       return;
     }
 
-    const supabase = createClient();
+    if (!isSupabaseConfigured()) {
+      setConfigError(supabaseConfigErrorMessage());
+      setIsLoading(false);
+      return;
+    }
+
+    const supabase = tryCreateClient();
+    if (!supabase) {
+      setConfigError(supabaseConfigErrorMessage());
+      setIsLoading(false);
+      return;
+    }
+
+    setConfigError(null);
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        const mapped = await loadProfile(session.user);
+        const mapped = await loadProfile(supabase, session.user);
         applyUser(mapped);
       }
       setIsLoading(false);
@@ -107,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        const mapped = await loadProfile(session.user);
+        const mapped = await loadProfile(supabase, session.user);
         applyUser(mapped);
       } else {
         applyUser(null);
@@ -128,13 +163,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        const supabase = createClient();
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        if (data.user) {
-          const mapped = await loadProfile(data.user);
-          applyUser(mapped);
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Sign-in failed');
+
+        // The session is handled by cookies set in the API route
+        // We'll wait for the onAuthStateChange or manually refresh
+        const supabase = tryCreateClient();
+        if (supabase) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const mapped = await loadProfile(supabase, user);
+            applyUser(mapped);
+          }
         }
+      } catch (err) {
+        throw new Error(mapAuthErrorMessage(err));
       } finally {
         setIsLoading(false);
       }
@@ -143,30 +192,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const register = useCallback(
-    async (email: string, username: string, password: string) => {
+    async (email: string, username: string, password: string): Promise<RegisterResult> => {
       setIsLoading(true);
       try {
         if (useMockAuth) {
           const mockUser = createMockUser(email, username, 'free');
           setMockUser(mockUser);
           applyUser(mockUser);
-          return;
+          return { needsEmailConfirmation: false };
         }
 
-        const supabase = createClient();
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { full_name: username },
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, name: username }),
         });
-        if (error) throw error;
-        if (data.user) {
-          const mapped = await loadProfile(data.user);
-          applyUser(mapped);
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Registration failed');
+
+        // Use the session status returned from the server
+        const needsConfirmation = !result.hasSession;
+        
+        if (!needsConfirmation) {
+          const supabase = tryCreateClient();
+          if (supabase) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              const mapped = await loadProfile(supabase, user);
+              applyUser(mapped);
+            }
+          }
         }
+        
+        return { needsEmailConfirmation: needsConfirmation };
+      } catch (err) {
+        throw new Error(mapAuthErrorMessage(err));
       } finally {
         setIsLoading(false);
       }
@@ -180,8 +241,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       applyUser(null);
       return;
     }
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    const supabase = tryCreateClient();
+    if (supabase) await supabase.auth.signOut();
     applyUser(null);
   }, [useMockAuth, applyUser]);
 
@@ -192,9 +253,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [user]
   );
 
-  const organizations: Organization[] = user
-    ? [organizationFromPlan(user.plan)]
-    : [];
+  const organizations: Organization[] = user ? [organizationFromPlan(user.plan)] : [];
 
   return (
     <AuthContext.Provider
@@ -205,6 +264,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         isLoading,
         isDemoMode: useMockAuth,
+        configError,
         login,
         register,
         logout,
@@ -212,6 +272,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshProfile,
       }}
     >
+      {configError && (
+        <div
+          role="alert"
+          className="border-b border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-100"
+        >
+          {configError}
+        </div>
+      )}
       {children}
     </AuthContext.Provider>
   );

@@ -1,4 +1,5 @@
 import type { User } from './types';
+import { isSupabaseConfigured as checkSupabaseEnv } from './supabase/env';
 
 export const MOCK_AUTH_ENABLED =
   process.env.NEXT_PUBLIC_MOCK_AUTH === 'true' ||
@@ -40,8 +41,6 @@ export function createMockUser(email: string, username?: string, plan: User['pla
 }
 
 export function isSupabaseConfigured(): boolean {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '';
-  return Boolean(url && key && !url.includes('your-project') && !key.includes('replace-with'));
+  return checkSupabaseEnv();
 }
 
