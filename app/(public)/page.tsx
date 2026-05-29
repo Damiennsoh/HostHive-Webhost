@@ -18,6 +18,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/lib/auth-context'
 
 const features = [
   {
@@ -107,6 +108,8 @@ const stats = [
 ]
 
 export default function HomePage() {
+  const { isAuthenticated } = useAuth()
+
   return (
     <div className="relative">
       {/* Hero Section */}
@@ -142,9 +145,9 @@ export default function HomePage() {
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link href="/register">
+              <Link href={isAuthenticated ? '/dashboard' : '/register'}>
                 <Button size="lg" className="bg-white text-black hover:bg-white/90 h-12 px-8 text-base">
-                  Start Deploying
+                  {isAuthenticated ? 'Open Dashboard' : 'Start Deploying'}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
@@ -442,7 +445,7 @@ export default function HomePage() {
                   ))}
                 </ul>
 
-                <Link href="/register" className="mt-8 block">
+                <Link href={isAuthenticated ? '/dashboard' : '/register'} className="mt-8 block">
                   <Button
                     className={`w-full ${
                       plan.highlighted
@@ -475,9 +478,9 @@ export default function HomePage() {
                 Join thousands of developers shipping faster with LynxHost.
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Link href="/register">
+                <Link href={isAuthenticated ? '/dashboard' : '/register'}>
                   <Button size="lg" className="bg-white text-black hover:bg-white/90 h-12 px-8">
-                    Get Started for Free
+                    {isAuthenticated ? 'Open Dashboard' : 'Get Started for Free'}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>

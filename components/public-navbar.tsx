@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/lib/auth-context'
 import { cn } from '@/lib/utils'
 
 const navLinks = [
@@ -16,6 +17,7 @@ const navLinks = [
 
 export function PublicNavbar() {
   const pathname = usePathname()
+  const { isAuthenticated } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
@@ -56,14 +58,14 @@ export function PublicNavbar() {
         </div>
 
         <div className="hidden items-center gap-4 md:flex">
-          <Link href="/login">
+          <Link href={isAuthenticated ? '/dashboard' : '/login'}>
             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-              Sign In
+              {isAuthenticated ? 'Dashboard' : 'Sign In'}
             </Button>
           </Link>
-          <Link href="/register">
+          <Link href={isAuthenticated ? '/dashboard' : '/register'}>
             <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-              Get Started
+              {isAuthenticated ? 'Go to Dashboard' : 'Get Started'}
             </Button>
           </Link>
         </div>
@@ -105,14 +107,14 @@ export function PublicNavbar() {
               </Link>
             ))}
             <div className="flex flex-col gap-2 pt-4">
-              <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+              <Link href={isAuthenticated ? '/dashboard' : '/login'} onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start">
-                  Sign In
+                  {isAuthenticated ? 'Dashboard' : 'Sign In'}
                 </Button>
               </Link>
-              <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+              <Link href={isAuthenticated ? '/dashboard' : '/register'} onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                  Get Started
+                  {isAuthenticated ? 'Go to Dashboard' : 'Get Started'}
                 </Button>
               </Link>
             </div>
